@@ -18,6 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
+  applicationName: SITE_NAME,
   title: {
     default: "JEaLiFe Stock | Images libres de droits",
     template: "%s | JEaLiFe Stock",
@@ -83,8 +84,19 @@ export default function RootLayout({ children }) {
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
     name: SITE_NAME,
+    alternateName: ["JEaLiFe Stock Gabon", "stock.jealife.com"],
     url: SITE_URL,
+    // Éditeur = le produit lui-même ; JEaLiFe Agency reste la maison mère.
+    publisher: {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: `${SITE_URL}/JEaLiFe-Stock-Logo-transparent-noir.png`,
+      parentOrganization: { "@type": "Organization", name: "JEaLiFe Agency", url: "https://www.jealife.com" },
+    },
     description:
       "Banque d'images et vidéos libres de droits de haute qualité. Une sélection soignée, où l'on trouve de belles images du continent africain.",
     inLanguage: "fr",
