@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import CraftedBy from "./CraftedBy";
 
 /**
  * Pied de page.
@@ -85,13 +86,16 @@ export default function Footer() {
                 </div>
 
                 <div className="pt-8 border-t border-gray-100 dark:border-zinc-800 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <p className="text-xs text-gray-400 dark:text-zinc-500">
-                        © {new Date().getFullYear()} JEaLiFe Stock. Les images
-                        appartiennent à leurs auteurs.
-                    </p>
-                    <Link href="/licence" className="text-xs font-semibold text-gray-500 dark:text-zinc-400 hover:text-black dark:hover:text-white transition-colors">
-                        Licence & conditions d&apos;utilisation
-                    </Link>
+                    <div className="flex flex-col md:flex-row items-center gap-x-6 gap-y-2 text-center md:text-left">
+                        <p className="text-xs text-gray-400 dark:text-zinc-500">
+                            Copyright © {new Date().getFullYear()} JEaLiFe Stock - JEaLiFe Agency. Les images
+                            appartiennent à leurs auteurs.
+                        </p>
+                        <Link href="/licence" className="text-xs font-semibold text-gray-500 dark:text-zinc-400 hover:text-black dark:hover:text-white transition-colors">
+                            Licence & conditions d&apos;utilisation
+                        </Link>
+                    </div>
+                    <CraftedBy />
                 </div>
             </div>
         </footer>
