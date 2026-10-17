@@ -27,6 +27,9 @@ export default function PhotoCard({ photo, liked = false, hideActions = false, p
 
     const isPending = photo.status === 'pending';
 
+    // Calques internes de la carte (boutons, badges) volontairement sous
+    // z-30 : à z-30 et z-40, ils passaient par-dessus les barres collantes
+    // (onglets du profil, barre de la fiche photo) au défilement.
     return (
         <div className="relative group mb-6 break-inside-avoid">
             <div className="relative w-full rounded-2xl bg-gray-100 dark:bg-zinc-800 shadow-sm transition-all duration-500 hover:shadow-xl hover:-translate-y-1">
@@ -76,7 +79,7 @@ export default function PhotoCard({ photo, liked = false, hideActions = false, p
                     sur son propre profil. N'est jamais rendu pour un visiteur ou dans le
                     feed éditorial car ces photos ne sont pas requêtées dans ce contexte. */}
                 {isPending && (
-                    <div className="absolute inset-0 rounded-2xl pointer-events-none z-20">
+                    <div className="absolute inset-0 rounded-2xl pointer-events-none z-10">
                         <div className="absolute inset-0 bg-black/40 rounded-2xl" />
                         <div className="absolute top-3 left-3">
                             <span className="inline-flex items-center gap-1.5 bg-amber-500/90 text-white text-[11px] font-semibold px-2.5 py-1 rounded-full shadow backdrop-blur-sm">
@@ -93,7 +96,7 @@ export default function PhotoCard({ photo, liked = false, hideActions = false, p
                             <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/0 to-black/30 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                         </div>
 
-                        <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 z-30">
+                        <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 z-[11]">
                             <LikeButton
                                 mediaId={photo.id}
                                 initialLiked={liked}
@@ -103,7 +106,7 @@ export default function PhotoCard({ photo, liked = false, hideActions = false, p
                             <SaveToCollectionButton mediaId={photo.id} />
                         </div>
 
-                        <div className="absolute bottom-0 left-0 right-0 p-5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 z-40">
+                        <div className="absolute bottom-0 left-0 right-0 p-5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 z-[12]">
                             <div className="flex items-center justify-between gap-3">
                                 <Link
                                     href={`/@${photo.author.username}`}
