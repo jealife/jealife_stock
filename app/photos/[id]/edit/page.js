@@ -138,12 +138,17 @@ export default function EditPhotoPage() {
     };
 
     /**
-     * Réécrit le fichier vignette en place (même adresse) avec ou sans
-     * filigrane fusionné dans les pixels. Repart de `sourceUrl` (la version
-     * web propre, jamais filigranée) plutôt que de la vignette actuelle :
-     * une fois un filigrane fusionné dans une image, il ne peut plus en être
-     * retiré, donc "dé-filigraner" en repartant de la vignette est
-     * impossible.
+     * Produit une nouvelle vignette (avec ou sans filigrane fusionné dans les
+     * pixels) à partir de `sourceUrl`, la version web propre, jamais
+     * filigranée : une fois un filigrane fusionné, il ne peut plus être
+     * retiré, donc « dé-filigraner » en repartant de la vignette actuelle
+     * est impossible.
+     *
+     * Les fichiers d'un média publié ne se réécrivent plus en place (le
+     * serveur refuse désormais de signer un chemin déjà utilisé, voir
+     * /api/r2-upload-url) : la vignette part à un nouveau chemin du même
+     * dossier, et /api/replace-thumbnail vérifie qu'il s'agit bien de la
+     * même photo avant de l'enregistrer.
      */
     const regenerateThumbnail = async (nextIsPremium) => {
         const { data: { session } } = await supabase.auth.getSession();
@@ -153,9 +158,11 @@ export default function EditPhotoPage() {
         if (!response.ok) throw new Error("Téléchargement de l'image source impossible.");
         const sourceBlob = await response.blob();
 
-        const path = new URL(thumbnailUrl).pathname.replace(/^\//, "");
-        const existingMimeType = path.endsWith(".webp") ? "image/webp" : "image/jpeg";
-        const { blob, mimeType } = await makeThumbnail(sourceBlob, { watermark: nextIsPremium, mimeType: existingMimeType });
+        const currentPath = new URL(thumbnailUrl).pathname.replace(/^\//, "");
+        const folder = currentPath.split("/").slice(0, 2).join("/");
+        const existingMimeType = currentPath.endsWith(".webp") ? "image/webp" : "image/jpeg";
+        const { blob, mimeType, extension } = await makeThumbnail(sourceBlob, { watermark: nextIsPremium, mimeType: existingMimeType });
+        const path = `${folder}/thumb-${Date.now().toString(36)}.${extension}`;
 
         const signRes = await fetch("/api/r2-upload-url", {
             method: "POST",
@@ -167,6 +174,17 @@ export default function EditPhotoPage() {
 
         const putRes = await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": mimeType }, body: blob });
         if (!putRes.ok) throw new Error("L'envoi de la vignette a échoué.");
+
+        const replaceRes = await fetch("/api/replace-thumbnail", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+            body: JSON.stringify({ mediaId: Number(id), path }),
+        });
+        const replaced = await replaceRes.json().catch(() => ({}));
+        if (!replaceRes.ok) throw new Error(replaced.error || "La vignette n'a pas pu être enregistrée.");
+
+        setThumbnailUrl(replaced.thumbnailUrl);
+        setPhotoUrl(replaced.thumbnailUrl);
     };
 
     const handleSubmit = async (e) => {

@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 /**
@@ -84,4 +84,37 @@ export async function deleteR2Objects(keys) {
             console.error(`Échec de suppression R2 pour "${keys[index]}" :`, result.reason);
         }
     });
+}
+
+/**
+ * Type et taille d'un objet R2, ou `null` s'il n'existe pas. Sert à vérifier
+ * côté serveur ce qui a réellement été déposé, plutôt que de croire ce que
+ * le navigateur en dit.
+ */
+export async function headR2Object(key) {
+    if (!r2Client) throw new Error("Cloudflare R2 n'est pas configuré.");
+    try {
+        const head = await r2Client.send(new HeadObjectCommand({ Bucket: R2_BUCKET_NAME, Key: key }));
+        return { contentType: head.ContentType || "", size: Number(head.ContentLength) || 0 };
+    } catch (error) {
+        if (error?.$metadata?.httpStatusCode === 404 || error?.name === "NotFound") return null;
+        throw error;
+    }
+}
+
+/**
+ * Contenu d'un objet R2, refusé au-delà de `maxBytes`. Lu avec les
+ * identifiants du serveur : ne dépend pas du domaine public `r2.dev`,
+ * limité en débit.
+ */
+export async function readR2Object(key, maxBytes) {
+    if (!r2Client) throw new Error("Cloudflare R2 n'est pas configuré.");
+    const object = await r2Client.send(new GetObjectCommand({ Bucket: R2_BUCKET_NAME, Key: key }));
+    const size = Number(object.ContentLength) || 0;
+    if (maxBytes && size > maxBytes) {
+        object.Body?.destroy?.();
+        throw new Error(`Objet R2 trop volumineux (${size} octets) : ${key}`);
+    }
+    const bytes = await object.Body.transformToByteArray();
+    return { buffer: Buffer.from(bytes), contentType: object.ContentType || "", size };
 }
