@@ -1,5 +1,33 @@
+// En-têtes de sécurité posés sur toutes les réponses. Pas de Content-Security-
+// Policy stricte : Turnstile, Supabase, R2 et Vercel Analytics chargent depuis
+// plusieurs domaines, et une politique trop large n'apporterait rien.
+const SECURITY_HEADERS = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  // Empêche d'afficher le site dans un cadre d'un autre domaine
+  // (détournement de clic sur « Télécharger », « Acheter »...).
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  poweredByHeader: false,
+
+  async headers() {
+    return [{ source: "/:path*", headers: SECURITY_HEADERS }];
+  },
+
+  async redirects() {
+    return [
+      // L'ancien portail d'entrée a disparu. Le paramètre `next` n'est
+      // volontairement pas suivi : une adresse comme `/\exemple.com` en
+      // ferait une redirection ouverte vers un autre site.
+      { source: "/verify", destination: "/", permanent: false },
+    ];
+  },
+
   images: {
     // AVIF puis WebP : à qualité perçue égale, une AVIF pèse environ 30 % de
     // moins qu'une JPEG. Sur un forfait mobile gabonais, cela se voit.

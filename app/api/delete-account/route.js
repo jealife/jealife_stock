@@ -89,9 +89,17 @@ export async function POST(request) {
 
         const { data: mediaRows, error: mediaError } = await admin
             .from("media")
-            .select("url, thumbnail_url, original_url")
+            .select("id, url, thumbnail_url, original_url")
             .eq("user_id", userId);
         if (mediaError) throw mediaError;
+
+        // Médias Premium : vraies adresses rangées à part (migration 0025),
+        // supprimées en cascade avec le compte. À lire avant. Absente sur
+        // une base pas encore migrée : on continue sans.
+        const premiumIds = (mediaRows || []).map((m) => m.id);
+        const { data: premiumRows } = premiumIds.length
+            ? await admin.from("media_premium_files").select("url, original_url").in("media_id", premiumIds)
+            : { data: [] };
 
         const { error: deleteAuthError } = await admin.auth.admin.deleteUser(userId);
         if (deleteAuthError) throw deleteAuthError;
@@ -101,7 +109,7 @@ export async function POST(request) {
         // annoncer un échec de suppression alors que le compte est bel et bien
         // parti tromperait l'admin.
         if (r2Configured && mediaRows?.length) {
-            const keys = mediaRows
+            const keys = [...mediaRows, ...(premiumRows || [])]
                 .flatMap((m) => [m.url, m.thumbnail_url, m.original_url])
                 .map(r2KeyFromUrl)
                 .filter(Boolean);

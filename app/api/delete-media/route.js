@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { r2Configured, r2KeyFromUrl, deleteR2Objects } from "../../lib/r2";
+import { readPremiumFiles } from "../../lib/server-supabase";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY =
@@ -53,6 +54,10 @@ export async function POST(request) {
             return NextResponse.json({ error: "Ce média n'existe pas ou n'est plus accessible." }, { status: 404 });
         }
 
+        // Média Premium : ses vraies adresses vivent à part (migration 0025)
+        // et disparaissent avec la ligne. À lire avant la suppression.
+        const premiumFiles = await readPremiumFiles(supabase, mediaId);
+
         // La RLS (auth.uid() = user_id ou is_admin()) peut bloquer ce DELETE
         // sans jamais renvoyer d'erreur — PostgREST considère « 0 ligne
         // affectée » comme un succès. Sans le `.select().maybeSingle()`
@@ -75,7 +80,7 @@ export async function POST(request) {
         }
 
         if (r2Configured) {
-            const keys = [media.url, media.thumbnail_url, media.original_url]
+            const keys = [media.url, media.thumbnail_url, media.original_url, premiumFiles?.url, premiumFiles?.original_url]
                 .map(r2KeyFromUrl)
                 .filter(Boolean);
             if (keys.length > 0) await deleteR2Objects(keys);
