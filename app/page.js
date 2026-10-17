@@ -1,6 +1,6 @@
 // La page lit son adresse (?q=, ?pays=, ?tri=...) : elle est donc rendue à
 // chaque visite, et ce `revalidate` ne la met pas en cache à lui seul. Ce
-// sont ses lectures Supabase qui le sont (une minute, voir lib/supabase.js) :
+// sont ses lectures Supabase qui le sont (voir lib/supabase.js) :
 // le rendu ne coûte plus que le temps de composer le HTML.
 export const revalidate = 300;
 

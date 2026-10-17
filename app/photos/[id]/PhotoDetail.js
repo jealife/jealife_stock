@@ -249,7 +249,9 @@ export default function PhotoDetail({ initialPhoto }) {
     const premiumLocked = photo.isPremium && !premiumAccess?.url;
     const displayUrl = photo.isPremium ? premiumAccess?.url : photo.url;
     const playbackUrl = photo.isPremium ? premiumAccess?.originalUrl : photo.originalUrl || photo.url;
-    const lightMode = dataSaver && !wantsHd;
+    // Jamais pour un média Premium : sa vignette porte le filigrane, et un
+    // acheteur doit voir l'image qu'il a payée.
+    const lightMode = dataSaver && !wantsHd && !photo.isPremium;
 
     const unlockPremiumPreview = () => {
         if (!photo.isPremium) return;
@@ -408,7 +410,7 @@ export default function PhotoDetail({ initialPhoto }) {
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={lightMode ? photo.thumbnailUrl : displayUrl}
-                                srcSet={!lightMode && !wantsHd && photo.thumbnailUrl && displayUrl && photo.width
+                                srcSet={!lightMode && !wantsHd && !photo.isPremium && photo.thumbnailUrl && displayUrl && photo.width
                                     ? `${photo.thumbnailUrl} ${derivativeWidth(photo, 800)}w, ${displayUrl} ${derivativeWidth(photo, 2400)}w`
                                     : undefined}
                                 sizes="(max-width: 768px) 100vw, 80vw"
