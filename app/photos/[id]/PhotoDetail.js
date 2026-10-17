@@ -7,7 +7,7 @@ import Image from "next/image";
 import {
     MapPin, Camera, Eye, Download, ArrowLeft, Edit2, Check, Copy,
     Share2, Flag, Globe2, X, MoreHorizontal, ShieldCheck, Calendar, Info,
-    Mail, Twitter, Instagram, ChevronDown, Sparkles, Tag, Plus, Loader2, CheckCircle2, AlertCircle,
+    Mail, Twitter, Instagram, ChevronDown, Lock, Tag, Plus, Loader2, CheckCircle2, AlertCircle,
 } from "lucide-react";
 import LikeButton from "../../components/LikeButton";
 import DownloadButton from "../../components/DownloadButton";
@@ -741,7 +741,7 @@ function LockedPreview({ thumbnailUrl, width, height }) {
                 />
             )}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-black/55 backdrop-blur-sm rounded-full whitespace-nowrap">
-                <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
+                <Lock className="w-4 h-4 text-amber-300 shrink-0" />
                 <span className="text-white text-xs font-semibold">Aperçu Premium : débloquez la version complète avec des crédits</span>
             </div>
         </div>

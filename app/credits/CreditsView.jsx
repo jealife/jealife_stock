@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, Coins, Loader2, CheckCircle2, Smartphone } from "lucide-react";
+import { Coins, Loader2, CheckCircle2, Smartphone } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { getSetting, getCreditPacks, getMyWallet, purchaseCredits } from "../lib/database";
 
@@ -64,7 +64,7 @@ export default function CreditsView() {
         <main className="min-h-screen bg-white dark:bg-zinc-950">
             <div className="max-w-3xl mx-auto px-4 py-16 md:py-24">
                 <div className="w-14 h-14 bg-amber-50 dark:bg-amber-950 rounded-2xl flex items-center justify-center mb-6">
-                    <Sparkles className="w-7 h-7 text-amber-500" />
+                    <Coins className="w-7 h-7 text-amber-500" />
                 </div>
 
                 <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-zinc-100 mb-4">

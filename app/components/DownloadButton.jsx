@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Loader2, ChevronDown, ChevronRight, Sparkles } from "lucide-react";
+import { Download, Loader2, ChevronDown, ChevronRight, Lock } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -37,11 +37,11 @@ function PremiumCompactLink({ media }) {
         <Link
             href={mediaUrl(media)}
             onClick={(event) => event.stopPropagation()}
-            title="Contenu Premium — voir la fiche pour le débloquer"
-            aria-label="Contenu Premium — voir la fiche pour le débloquer"
+            title="Contenu Premium : voir la fiche pour le débloquer"
+            aria-label="Contenu Premium : voir la fiche pour le débloquer"
             className="bg-white hover:bg-gray-100 text-amber-600 p-2.5 rounded-full transition-all shadow-lg active:scale-95 flex items-center justify-center"
         >
-            <Sparkles className="w-4 h-4" />
+            <Lock className="w-4 h-4" />
         </Link>
     );
 }
@@ -161,7 +161,7 @@ function PremiumDownload({ media, onDownloaded }) {
                 title="Le paiement en ligne n'est pas encore activé sur JEaLiFe Stock. Vous pourrez bientôt débloquer ce fichier avec des crédits, achetés via Mobile Money."
                 className="h-9 px-3 sm:px-4 bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900 rounded-md font-medium text-[13px] flex items-center gap-2 cursor-default"
             >
-                <Sparkles className="w-4 h-4" />
+                <Lock className="w-4 h-4" />
                 <span className="hidden sm:inline">Premium · Bientôt disponible</span>
                 <span className="sm:hidden">Bientôt</span>
             </div>
@@ -175,7 +175,7 @@ function PremiumDownload({ media, onDownloaded }) {
                 disabled={busy}
                 className="h-9 px-3 sm:px-4 bg-amber-500 text-white rounded-md font-medium text-[13px] hover:bg-amber-600 transition-all shadow-sm flex items-center gap-2 disabled:opacity-70"
             >
-                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
                 {settings.creditsCost
                     ? `Télécharger (${settings.creditsCost} crédit${settings.creditsCost > 1 ? "s" : ""})`
                     : "Télécharger"}

@@ -56,7 +56,7 @@ export default function VideoCard({ video, liked = false }) {
 
                 <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/0 to-black/30 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-                <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 z-20">
+                <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 z-[11]">
                     <LikeButton
                         mediaId={video.id}
                         initialLiked={liked}
@@ -66,7 +66,7 @@ export default function VideoCard({ video, liked = false }) {
                     <SaveToCollectionButton mediaId={video.id} />
                 </div>
 
-                <div className="absolute bottom-0 left-0 right-0 p-5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 z-20">
+                <div className="absolute bottom-0 left-0 right-0 p-5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 z-[12]">
                     <Link href={`/@${video.author.username}`} className="flex items-center gap-3 min-w-0">
                         <Image
                             src={video.author.avatar}

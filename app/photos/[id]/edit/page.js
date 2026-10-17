@@ -7,7 +7,7 @@ import { supabase } from "../../../lib/supabase";
 import { deleteMedia, getMediaById, updateMedia, syncTopics, getCountries, getPremiumPricing } from "../../../lib/database";
 import { makeThumbnail } from "../../../lib/images";
 import { slugifyClient, parseMediaId } from "../../../lib/media";
-import { ArrowLeft, Save, MapPin, Camera, Tag, Loader2, CheckCircle2, AlertCircle, Plus, Trash2, Globe2, Accessibility, Sparkles } from "lucide-react";
+import { ArrowLeft, Save, MapPin, Camera, Tag, Loader2, CheckCircle2, AlertCircle, Plus, Trash2, Globe2, Accessibility, Lock } from "lucide-react";
 import Link from "next/link";
 
 export default function EditPhotoPage() {
@@ -301,7 +301,7 @@ export default function EditPhotoPage() {
 
                             <div className="space-y-2">
                                 <label className="text-sm font-bold text-gray-900 dark:text-zinc-100 flex items-center gap-2">
-                                    <Sparkles className="w-4 h-4" /> Accès
+                                    <Lock className="w-4 h-4" /> Accès
                                 </label>
                                 <div className="flex gap-1.5">
                                     {[
@@ -323,7 +323,7 @@ export default function EditPhotoPage() {
                                                     : "border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-400 hover:border-gray-400 dark:hover:border-zinc-500"
                                             }`}
                                         >
-                                            {key && <Sparkles className="w-4 h-4" />} {label}
+                                            {key && <Lock className="w-4 h-4" />} {label}
                                         </button>
                                     ))}
                                 </div>

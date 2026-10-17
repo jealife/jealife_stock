@@ -3,7 +3,7 @@
 import {
     UploadCloud, CheckCircle2, Camera, Tag, X, Info,
     Image as ImageIcon, Video, Palette, Loader2, Accessibility,
-    PartyPopper, ArrowRight, Plus, ChevronDown, AlertCircle, Sparkles,
+    PartyPopper, ArrowRight, Plus, ChevronDown, AlertCircle, Sparkles, Lock,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -346,7 +346,7 @@ function ItemCard({ item, index, countries, dbTopics, premiumPricing, canPricePr
                                 title={aiQuotaExhausted ? "Quota de génération IA atteint pour le moment. Réessayez plus tard." : undefined}
                                 className="text-[12px] font-medium text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 disabled:opacity-50 flex items-center gap-1 shrink-0 transition-colors"
                             >
-                                {item.generating ? <Loader2 className="w-3 h-3 animate-spin" /> : "✨"}
+                                {item.generating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
                                 {item.generating ? "Génération…" : aiQuotaExhausted ? "IA indisponible" : "Générer avec l'IA"}
                             </button>
                         </div>
@@ -390,7 +390,7 @@ function ItemCard({ item, index, countries, dbTopics, premiumPricing, canPricePr
                                             : "border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-400 hover:border-gray-400 dark:hover:border-zinc-500"
                                     }`}
                                 >
-                                    {key && <Sparkles className="w-3.5 h-3.5" />} {label}
+                                    {key && <Lock className="w-3.5 h-3.5" />} {label}
                                 </button>
                             ))}
                         </div>

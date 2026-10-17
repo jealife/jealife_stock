@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Heart, FolderPlus, Sparkles, Banknote, Coins } from "lucide-react";
+import { Bell, Heart, FolderPlus, LockOpen, Banknote, Coins } from "lucide-react";
 import { mediaUrl, timeAgo, truncateText } from "../lib/media";
 
 export const TYPE_ICON = {
     like: Heart,
     collection_add: FolderPlus,
-    premium_purchase: Sparkles,
+    premium_purchase: LockOpen,
     payout_paid: Banknote,
     pricing_unlocked: Coins,
 };
