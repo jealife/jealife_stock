@@ -1,9 +1,5 @@
-"use client";
-
 import Link from "next/link";
 import { Camera, PenTool, Video } from "lucide-react";
-import { useEffect, useState } from "react";
-import { getPlatformStats } from "../lib/database";
 import { formatCount } from "../lib/media";
 
 /**
@@ -13,11 +9,12 @@ import { formatCount } from "../lib/media";
  * « 100K+ vidéos » sur une base qui n'en contenait aucune. Les compteurs
  * viennent maintenant de la vue `platform_stats`, et une catégorie vide le dit
  * franchement plutôt que d'inventer un chiffre.
+ *
+ * Composant serveur : les chiffres arrivent avec la page (voir app/page.js)
+ * au lieu d'un « Chargement… » remplacé après coup, qui décalait la mise en
+ * page et coûtait une requête de plus depuis le téléphone.
  */
-export default function CategorySection() {
-    const [stats, setStats] = useState(null);
-
-    useEffect(() => { getPlatformStats().then(setStats); }, []);
+export default function CategorySection({ stats = null }) {
 
     const categories = [
         {

@@ -1,5 +1,5 @@
 import { incrementDownloads } from "./database";
-import { resizeRemoteImage } from "./images";
+import { resizeRemoteImage, THUMBNAIL_MAX_EDGE } from "./images";
 import { supabase } from "./supabase";
 
 /**
@@ -90,10 +90,13 @@ export function normalizeMedia(row) {
         type: row.type || "photo",
 
         // Chaque usage a sa version : vignette en grille, version web en
-        // détail, original réservé au téléchargement.
-        url: row.url,
-        thumbnailUrl: row.thumbnail_url || row.url,
-        originalUrl: row.original_url || row.url,
+        // détail, original réservé au téléchargement. Les cartes de grille
+        // ne reçoivent que la vignette (voir CARD_SELECT) : `url` et
+        // `originalUrl` y valent `null` et sont résolus au moment du
+        // téléchargement (voir `downloadMedia`).
+        url: row.url || null,
+        thumbnailUrl: row.thumbnail_url || row.url || null,
+        originalUrl: row.original_url || null,
         blurDataURL: row.blur_data_url || null,
 
         title: row.title || null,
@@ -238,14 +241,38 @@ export async function downloadMedia(media, sizeKey = "original") {
     const option = options.find((o) => o.key === sizeKey) || options[0];
     const isVideo = media?.type === "video";
 
+    // « Petit » (640 px) se fabrique à partir de la vignette (800 px) quand
+    // elle est assez large : quelques dizaines de Ko au lieu de la version
+    // web de 2400 px, une vraie économie sur un forfait mobile. Jamais pour
+    // un média Premium, dont la vignette est filigranée.
+    const thumbWidth = media.width && media.height
+        ? Math.round(media.width >= media.height ? THUMBNAIL_MAX_EDGE : (THUMBNAIL_MAX_EDGE * media.width) / media.height)
+        : 0;
+    const fromThumbnail = !isVideo && !media.isPremium && option.width && media.thumbnailUrl && thumbWidth >= option.width;
+
+    // Une carte de grille ne connaît que la vignette : les vraies adresses
+    // sont demandées au serveur au moment du clic. Avant, « Format
+    // original » depuis une grille livrait en réalité la version web
+    // 2400 px, faute d'avoir l'adresse de l'original sous la main.
+    let { url, originalUrl } = media;
+    if (fromThumbnail) {
+        url = media.thumbnailUrl;
+    } else if (!url || !originalUrl) {
+        const access = await fetchPhotoAccess(media.id);
+        url = url || access.url;
+        originalUrl = originalUrl || access.originalUrl;
+    }
+    originalUrl = originalUrl || url;
+    if (!url && !originalUrl) throw new Error("Fichier indisponible");
+
     // Pour une vidéo, `url` est l'image d'aperçu et `originalUrl` le fichier
     // vidéo : les confondre est précisément ce qui produisait une photo à la
     // place du film.
     let source;
     if (isVideo) {
-        source = option.key === "poster" ? media.url : media.originalUrl || media.url;
+        source = option.key === "poster" ? url : originalUrl;
     } else {
-        source = option.key === "original" ? media.originalUrl || media.url : media.url;
+        source = option.key === "original" ? originalUrl : url;
     }
 
     let blob;

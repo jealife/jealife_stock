@@ -11,9 +11,12 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
+// Police à chasse fixe utilisée à un seul endroit (confirmation de
+// suppression de compte) : inutile de la précharger sur chaque page.
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  preload: false,
 });
 
 export const metadata = {

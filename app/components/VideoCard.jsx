@@ -23,16 +23,16 @@ export default function VideoCard({ video, liked = false }) {
             <div className="relative w-full overflow-hidden rounded-2xl bg-gray-900 shadow-sm transition-all duration-500 hover:shadow-xl hover:-translate-y-1">
                 <Link href={mediaUrl(video)} className="block">
                     <div className="relative w-full" style={video.width && video.height ? { aspectRatio: `${video.width} / ${video.height}` } : { aspectRatio: '16/9' }}>
-                        {!loaded && <ImageLoader />}
+                        {/* Même principe que PhotoCard : l'image n'est plus
+                            masquée jusqu'à la fin de son chargement. */}
+                        {!loaded && !video.blurDataURL && <ImageLoader />}
                         <Image
                             src={poster}
                             alt={video.alt}
                             fill
                             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             unoptimized
-                            className={`object-cover transition-all duration-700 group-hover:scale-105 ${
-                                loaded ? "opacity-90 group-hover:opacity-100" : "opacity-0"
-                            }`}
+                            className="object-cover transition-all duration-700 opacity-90 group-hover:opacity-100 group-hover:scale-105"
                             onLoad={() => setLoaded(true)}
                             onError={() => setLoaded(true)}
                             onContextMenu={video.isPremium ? (e) => e.preventDefault() : undefined}

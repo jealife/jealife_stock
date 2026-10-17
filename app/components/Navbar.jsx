@@ -2,12 +2,13 @@
 import Link from "next/link";
 import { Search, Menu, X, User as UserIcon, LogIn, Image as ImageIcon, Video, Palette, ChevronDown, Building2, LayoutGrid, Users, Compass, RotateCcw, PenTool, LogOut, BarChart3, Download, Settings } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { signOut } from "../lib/auth";
 import UserMenu from "./UserMenu";
 import NotificationBell from "./NotificationBell";
 import { ThemeToggle, ThemeToggleIcon } from "./ThemeToggle";
+import DataSaverToggle from "./DataSaverToggle";
 
 // Une seule source pour le menu bureau et le menu mobile : les deux listes
 // divergeaient (l'une proposait « Newsroom », l'autre « Presse », avec des
@@ -47,13 +48,29 @@ const MENU_SECTIONS = [
     },
 ];
 
+/**
+ * Garde le champ de recherche synchronisé avec `?q=` (Hero, tendances,
+ * navigation arrière) : sans ça, affiner une recherche en cours obligeait à
+ * tout retaper.
+ *
+ * Isolé dans son propre composant, sous son propre <Suspense> : lu
+ * directement dans la Navbar, `useSearchParams()` empêchait tout le menu
+ * d'être rendu côté serveur sur les pages statiques (la barre n'apparaissait
+ * qu'après le chargement du JavaScript, en décalant toute la page).
+ */
+function SearchTermSync({ onChange }) {
+    const searchParams = useSearchParams();
+    const q = searchParams.get("q") || "";
+    useEffect(() => { onChange(q); }, [q, onChange]);
+    return null;
+}
+
 export default function Navbar() {
     const router = useRouter();
     const pathname = usePathname();
-    const searchParams = useSearchParams();
     const { user, profile, loading } = useAuth();
     const [isSearchFocused, setIsSearchFocused] = useState(false);
-    const [term, setTerm] = useState(() => searchParams.get("q") || "");
+    const [term, setTerm] = useState("");
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [typeMenuOpen, setTypeMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
@@ -76,7 +93,8 @@ export default function Navbar() {
         const handleScroll = () => {
             setScrolled(window.scrollY > 10);
         };
-        window.addEventListener('scroll', handleScroll);
+        handleScroll();
+        window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
@@ -91,13 +109,6 @@ export default function Navbar() {
     useEffect(() => {
         if (mobileSearchExpanded) mobileFloatingSearchRef.current?.focus();
     }, [mobileSearchExpanded]);
-
-    // Garde le champ synchronisé avec la recherche active (Hero, tendances,
-    // navigation arrière) : sans ça, affiner une recherche en cours obligeait
-    // à tout retaper, le champ restant vide alors qu'une requête est active.
-    useEffect(() => {
-        setTerm(searchParams.get("q") || "");
-    }, [searchParams]);
 
     // Close user menu when clicking outside
     useEffect(() => {
@@ -177,7 +188,11 @@ export default function Navbar() {
                 ))}
             </div>
 
-            <div className="mt-auto pt-10 border-t border-gray-100 dark:border-zinc-800 flex flex-wrap items-center gap-6 text-sm text-gray-500 dark:text-zinc-400 font-medium">
+            <div className="mt-auto pt-6 flex flex-wrap items-center justify-between gap-3">
+                <span className="text-sm font-semibold text-gray-700 dark:text-zinc-300">Économie de données</span>
+                <DataSaverToggle />
+            </div>
+            <div className="pt-6 mt-6 border-t border-gray-100 dark:border-zinc-800 flex flex-wrap items-center gap-6 text-sm text-gray-500 dark:text-zinc-400 font-medium">
                 <Link href="/licence" onClick={closeMenu} className="hover:text-black dark:hover:text-white">Licence</Link>
                 <Link href="/help" onClick={closeMenu} className="hover:text-black dark:hover:text-white">Aide</Link>
                 <Link href="/about" onClick={closeMenu} className="hover:text-black dark:hover:text-white">À propos</Link>
@@ -188,6 +203,9 @@ export default function Navbar() {
 
     return (
         <>
+            <Suspense fallback={null}>
+                <SearchTermSync onChange={setTerm} />
+            </Suspense>
             {/* Desktop Navigation Rail (Unsplash Style) */}
             <div className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-[64px] z-[60] bg-white dark:bg-zinc-900 border-r border-gray-100 dark:border-zinc-800 items-center py-4">
                 {/* Logo */}
@@ -449,6 +467,14 @@ export default function Navbar() {
                             <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-100 dark:border-zinc-800">
                                 <span className="text-sm font-semibold text-gray-700 dark:text-zinc-300">Thème</span>
                                 <ThemeToggle />
+                            </div>
+
+                            {/* Économie de données : images allégées, vidéos à la
+                                demande (voir lib/data-saver.js). Pensé pour les
+                                forfaits mobiles vendus au mégaoctet. */}
+                            <div className="flex items-start justify-between gap-3 mb-6 pb-6 border-b border-gray-100 dark:border-zinc-800">
+                                <span className="text-sm font-semibold text-gray-700 dark:text-zinc-300 pt-1.5">Économie de données</span>
+                                <DataSaverToggle />
                             </div>
 
                             {/* Footer Buttons — même logique que les actions bureau :

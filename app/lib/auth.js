@@ -1,5 +1,6 @@
 import { supabase, SUPABASE_URL, SUPABASE_KEY } from './supabase';
 import { friendlyErrorMessage } from './errors';
+import { refreshPublicPages } from './database';
 
 // Connexion avec email et mot de passe.
 // `captchaToken` (jeton Turnstile) est requis dès que la protection anti-bot
@@ -195,6 +196,10 @@ export async function upsertProfile(userId, profileData) {
             .single();
 
         if (error) throw error;
+
+        // Nom, photo ou bio modifiés : la page publique du profil et les
+        // cartes qui l'affichent doivent suivre sans attendre le cache.
+        refreshPublicPages();
 
         // Synchroniser également user_metadata dans Supabase Auth
         if (profileData.avatar_url || profileData.full_name) {

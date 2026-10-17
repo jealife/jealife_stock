@@ -47,17 +47,35 @@ export default async function sitemap() {
         }
     };
 
+    // Supabase plafonne chaque réponse à 1 000 lignes, quel que soit le
+    // `.limit()` demandé : au-delà de 1 000 photos, le plan de site
+    // s'arrêtait silencieusement à la 1 000e. On lit donc par tranches.
+    const PAGE = 1000;
+    const readAll = async (build, max) => {
+        const rows = [];
+        for (let offset = 0; offset < max; offset += PAGE) {
+            const { data, error } = await build().range(offset, Math.min(offset + PAGE, max) - 1);
+            if (error) throw error;
+            rows.push(...(data || []));
+            if (!data || data.length < PAGE) break;
+        }
+        return { data: rows, error: null };
+    };
+
     const [media, profiles, topics, countries, collections] = await Promise.all([
         safeQuery(() =>
-            supabase
-                .from("media")
-                .select("id, type, title, alt_text, url, thumbnail_url, original_url, updated_at, country_code, is_premium")
-                .eq("status", "published")
-                .order("created_at", { ascending: false })
-                .limit(20000)
+            readAll(() =>
+                supabase
+                    .from("media")
+                    .select("id, type, title, alt_text, url, thumbnail_url, original_url, updated_at, country_code, is_premium")
+                    .eq("status", "published")
+                    .order("created_at", { ascending: false })
+                    .order("id", { ascending: false }),
+                20000
+            )
         ),
         safeQuery(() =>
-            supabase.from("profiles").select("username, updated_at").limit(5000)
+            readAll(() => supabase.from("profiles").select("username, updated_at").order("id"), 5000)
         ),
         // Seules les catégories, jamais les mots-clés libres : `topics` se
         // remplit tout seul à chaque publication (chaque tag saisi y crée une

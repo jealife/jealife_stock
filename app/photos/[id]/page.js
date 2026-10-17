@@ -10,6 +10,13 @@ import PhotoDetail from "./PhotoDetail";
 // d'URL qu'il accepte de parcourir.
 export const revalidate = 300;
 
+// Rendu à la première visite puis servi depuis le cache de Vercel (ISR),
+// régénéré en arrière-plan au rythme de `revalidate`. Sans cet export (même
+// vide), une route à paramètre dynamique était recalculée à chaque requête.
+export async function generateStaticParams() {
+    return [];
+}
+
 // `generateMetadata` et la page interrogent la même fiche : `cache()` évite
 // d'aller la chercher deux fois par requête.
 const loadMedia = cache(async (rawId) => getMediaById(parseMediaId(rawId)));

@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { r2Configured, r2KeyFromUrl, deleteR2Objects } from "../../lib/r2";
+import { readPremiumFiles } from "../../lib/server-supabase";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY =
@@ -99,7 +100,13 @@ export async function POST(request) {
         }
 
         if (r2Configured && before.thumbnail_url) {
-            const keys = [before.url, before.original_url].map(r2KeyFromUrl).filter(Boolean);
+            // Média Premium : vraies adresses rangées à part (migration 0025).
+            // La vignette, elle, est épargnée (email de refus, audit).
+            const premiumFiles = await readPremiumFiles(supabase, mediaId);
+            const keys = [before.url, before.original_url, premiumFiles?.url, premiumFiles?.original_url]
+                .filter((url) => url && url !== before.thumbnail_url)
+                .map(r2KeyFromUrl)
+                .filter(Boolean);
             if (keys.length > 0) await deleteR2Objects(keys);
         }
 

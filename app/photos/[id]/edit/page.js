@@ -96,7 +96,20 @@ export default function EditPhotoPage() {
                 });
                 setMediaType(data.type || "photo");
                 setPhotoUrl(data.thumbnail_url || data.url);
-                setSourceUrl(data.url);
+                // Média Premium : `url` ne porte que la vignette filigranée,
+                // la version web propre vit dans `media_premium_files`
+                // (migration 0025, lisible par l'auteur). C'est elle qu'il
+                // faut pour régénérer une vignette sans filigrane.
+                let source = data.url;
+                if (data.is_premium) {
+                    const { data: files } = await supabase
+                        .from('media_premium_files')
+                        .select('url')
+                        .eq('media_id', data.id)
+                        .maybeSingle();
+                    source = files?.url || data.url;
+                }
+                setSourceUrl(source);
                 setThumbnailUrl(data.thumbnail_url);
                 setOriginalIsPremium(!!data.is_premium);
             } else {

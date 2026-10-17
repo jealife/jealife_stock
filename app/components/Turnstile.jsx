@@ -64,8 +64,8 @@ const Turnstile = forwardRef(function Turnstile({ onVerify, onExpire, onError },
 
         // Si le script Cloudflare ne répond pas en 8 s (réseau bloqué, ex.
         // certains opérateurs au Maroc), on prévient la page plutôt que de
-        // rester figé indéfiniment. Le flag permet à /verify d'afficher un
-        // bouton de secours sans token Turnstile.
+        // rester figé indéfiniment : le formulaire appelant peut alors
+        // expliquer le blocage au lieu d'attendre un widget qui ne vient pas.
         const fallbackTimer = setTimeout(() => {
             if (!cancelled && !window.turnstile) {
                 onError?.("widget_unavailable");

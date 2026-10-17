@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
@@ -16,7 +16,6 @@ export default function ClientLayout({ children }) {
         "/forgot-password",
         "/reset-password",
         "/auth/callback",
-        "/verify",
     ];
     // L'admin a sa propre coquille (app/admin/layout.js — sidebar desktop,
     // barre d'onglets mobile) : la Navbar publique n'a rien à y faire, elle
@@ -49,11 +48,10 @@ export default function ClientLayout({ children }) {
 
     return (
         <>
-            {!shouldHideLayout && (
-                <Suspense fallback={null}>
-                    <Navbar />
-                </Suspense>
-            )}
+            {/* Sans <Suspense> : la Navbar ne lit plus `useSearchParams()`
+                elle-même (voir SearchTermSync), elle est donc rendue côté
+                serveur sur toutes les pages, statiques comprises. */}
+            {!shouldHideLayout && <Navbar />}
             <div className={!shouldHideLayout ? "md:pl-[64px] transition-all duration-300 flex flex-col min-h-screen" : "flex flex-col min-h-screen"}>
                 <div className="flex-1">
                     {children}

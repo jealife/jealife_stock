@@ -7,6 +7,13 @@ import UserPhotos from "./UserPhotos";
 
 export const revalidate = 600;
 
+// Rendu à la première visite puis servi depuis le cache de Vercel (ISR),
+// régénéré en arrière-plan au rythme de `revalidate`. Sans cet export (même
+// vide), une route à paramètre dynamique était recalculée à chaque requête.
+export async function generateStaticParams() {
+    return [];
+}
+
 const loadProfile = cache(async (username) => getUserProfile(username));
 
 // `/[handle]` capte tout segment racine non reconnu par une route statique
