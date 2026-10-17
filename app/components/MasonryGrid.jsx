@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
 import { ImageOff, Loader2 } from "lucide-react";
 import PhotoCard from "./PhotoCard";
@@ -16,6 +16,67 @@ import {
     searchMedia,
 } from "../lib/database";
 import { normalizeMediaList } from "../lib/media";
+import { useDataSaver } from "../lib/data-saver";
+
+/**
+ * Nombre de colonnes selon la largeur d'écran. Lu avec
+ * `useSyncExternalStore` : au rendu serveur (et pendant l'hydratation), la
+ * largeur est inconnue (0) et la grille est rendue pour chaque disposition
+ * possible, chacune affichée par CSS sur sa plage d'écran. Juste après
+ * l'hydratation, seule la bonne disposition est gardée. Avant, le serveur
+ * rendait toujours trois colonnes, et un téléphone voyait la grille se
+ * réorganiser en une colonne une fois le JavaScript chargé.
+ */
+function subscribeToResize(callback) {
+    window.addEventListener("resize", callback);
+    return () => window.removeEventListener("resize", callback);
+}
+
+function columnsForWidth(width, mobileColumns) {
+    if (width < 640) return mobileColumns || 1;
+    if (width < 1024) return 2;
+    return 3;
+}
+
+/** Dispositions à rendre côté serveur, avec la classe qui affiche chacune sur sa plage. */
+function responsiveLayouts(mobileColumns) {
+    const mobile = mobileColumns || 1;
+    if (mobile === 2) {
+        return [
+            { count: 2, className: "flex lg:hidden" },
+            { count: 3, className: "hidden lg:flex" },
+        ];
+    }
+    return [
+        { count: mobile, className: "flex sm:hidden" },
+        { count: 2, className: "hidden sm:flex lg:hidden" },
+        { count: 3, className: "hidden lg:flex" },
+    ];
+}
+
+/**
+ * Répartition façon Unsplash : chaque média va dans la colonne la moins
+ * haute, d'après son format. La répartition en tourniquet (1re colonne,
+ * 2e, 3e...) empilait parfois tous les portraits dans la même colonne et
+ * laissait de grands vides en bas des autres. Déterministe : charger une
+ * page de plus ne déplace jamais les médias déjà affichés.
+ */
+function distribute(items, count) {
+    const columns = Array.from({ length: count }, () => ({ height: 0, items: [] }));
+    for (const item of items) {
+        const ratio = item.width && item.height
+            ? item.height / item.width
+            : item.type === "video" ? 9 / 16 : 1;
+        let target = columns[0];
+        for (const column of columns) {
+            if (column.height < target.height - 0.001) target = column;
+        }
+        target.items.push(item);
+        // Marge entre cartes, exprimée en largeur de colonne.
+        target.height += ratio + 0.06;
+    }
+    return columns.map((column) => column.items);
+}
 
 /**
  * Grille de médias.
@@ -59,7 +120,12 @@ export default function MasonryGrid({
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(!seeded || initialItems.length === PAGE_SIZE);
     const [error, setError] = useState(null);
-    const [columnCount, setColumnCount] = useState(3);
+    const dataSaver = useDataSaver();
+    const columnCount = useSyncExternalStore(
+        subscribeToResize,
+        () => columnsForWidth(window.innerWidth, mobileColumns),
+        () => 0
+    );
 
     const sentinelRef = useRef(null);
     // Évite qu'un résultat de requête lente écrase un filtre plus récent.
@@ -67,19 +133,6 @@ export default function MasonryGrid({
     // La première page vient du serveur : la redemander au montage ferait un
     // aller-retour pour rien et ferait clignoter la grille.
     const useSeedRef = useRef(seeded);
-
-    useEffect(() => {
-        const updateColumns = () => {
-            const width = window.innerWidth;
-            if (width < 640) setColumnCount(mobileColumns || 1);
-            else if (width < 1024) setColumnCount(2);
-            else setColumnCount(3);
-        };
-
-        updateColumns();
-        window.addEventListener("resize", updateColumns);
-        return () => window.removeEventListener("resize", updateColumns);
-    }, [mobileColumns]);
 
     const fetchPage = useCallback(
         async (offset) => {
@@ -181,14 +234,16 @@ export default function MasonryGrid({
         const sentinel = sentinelRef.current;
         if (!sentinel || !hasMore || loading) return;
 
+        // En économie de données, la page suivante n'est chargée qu'au
+        // dernier moment plutôt que 600 px à l'avance.
         const observer = new IntersectionObserver(
             (entries) => { if (entries[0].isIntersecting) loadMoreRef.current(); },
-            { rootMargin: "600px" }
+            { rootMargin: dataSaver ? "150px" : "600px" }
         );
 
         observer.observe(sentinel);
         return () => observer.disconnect();
-    }, [hasMore, loading]);
+    }, [hasMore, loading, dataSaver]);
 
     // Cœurs déjà donnés par l'utilisateur connecté.
     //
@@ -222,19 +277,28 @@ export default function MasonryGrid({
         return () => { cancelled = true; };
     }, [user, items]);
 
-    if (loading) {
-        const skeletonColumns = Array.from({ length: columnCount }, () => []);
-        [...Array(12)].forEach((_, i) => skeletonColumns[i % columnCount].push(i));
+    // Largeur inconnue (rendu serveur, hydratation) : toutes les
+    // dispositions, chacune visible sur sa plage d'écran.
+    const layouts = columnCount === 0
+        ? responsiveLayouts(mobileColumns)
+        : [{ count: columnCount, className: "flex" }];
 
+    if (loading) {
         return (
             <div className="max-w-[1600px] mx-auto px-4 py-8">
-                <div className="flex flex-row gap-6">
-                    {skeletonColumns.map((column, columnIndex) => (
-                        <div key={columnIndex} className="flex-1 flex flex-col gap-6">
-                            {column.map((i) => <SkeletonCard key={i} index={i} />)}
+                {layouts.map(({ count, className }) => {
+                    const skeletonColumns = Array.from({ length: count }, () => []);
+                    [...Array(12)].forEach((_, i) => skeletonColumns[i % count].push(i));
+                    return (
+                        <div key={count} className={`${className} flex-row gap-6`}>
+                            {skeletonColumns.map((column, columnIndex) => (
+                                <div key={columnIndex} className="flex-1 flex flex-col gap-6">
+                                    {column.map((i) => <SkeletonCard key={i} index={i} />)}
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
+                    );
+                })}
             </div>
         );
     }
@@ -266,36 +330,40 @@ export default function MasonryGrid({
         );
     }
 
-    // Répartition en colonnes de hauteur libre : c'est ce qui donne la
-    // mosaïque sans laisser de trous en bas.
-    const columns = Array.from({ length: columnCount }, () => []);
-    items.forEach((item, index) => columns[index % columnCount].push(item));
+    // Les médias de la première rangée sont chargés en priorité : c'est là
+    // que se trouve l'image la plus grande visible au chargement.
+    const firstRow = new Set(items.slice(0, columnCount || 3).map((item) => item.id));
 
     return (
         <div className="max-w-[1600px] mx-auto px-4 py-8">
-            <div className="flex flex-row gap-6">
-                {columns.map((columnItems, columnIndex) => (
-                    <div key={columnIndex} className="flex-1 flex flex-col gap-6">
-                        {columnItems.map((item, itemIndex) => (
-                            item.type === 'video' ? (
-                                <VideoCard
-                                    key={item.id}
-                                    video={item}
-                                    liked={likedIds.has(item.id)}
-                                />
-                            ) : (
-                                <PhotoCard
-                                    key={item.id}
-                                    photo={item}
-                                    liked={likedIds.has(item.id)}
-                                    hideActions={hideActions}
-                                    priority={columnIndex === 0 && itemIndex === 0}
-                                />
-                            )
-                        ))}
-                    </div>
-                ))}
-            </div>
+            {/* La clé de chaque disposition est son nombre de colonnes : après
+                l'hydratation, React garde tel quel le bloc déjà affiché (les
+                images ne se rechargent pas) et retire seulement les autres. */}
+            {layouts.map(({ count, className }) => (
+                <div key={count} className={`${className} flex-row gap-6`}>
+                    {distribute(items, count).map((columnItems, columnIndex) => (
+                        <div key={columnIndex} className="flex-1 min-w-0 flex flex-col gap-6">
+                            {columnItems.map((item) => (
+                                item.type === 'video' ? (
+                                    <VideoCard
+                                        key={item.id}
+                                        video={item}
+                                        liked={likedIds.has(item.id)}
+                                    />
+                                ) : (
+                                    <PhotoCard
+                                        key={item.id}
+                                        photo={item}
+                                        liked={likedIds.has(item.id)}
+                                        hideActions={hideActions}
+                                        priority={firstRow.has(item.id)}
+                                    />
+                                )
+                            ))}
+                        </div>
+                    ))}
+                </div>
+            ))}
 
             <div ref={sentinelRef} className="h-px" aria-hidden="true" />
 

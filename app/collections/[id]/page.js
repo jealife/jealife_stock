@@ -5,6 +5,13 @@ import CollectionDetail from "./CollectionDetail";
 
 export const revalidate = 300;
 
+// Rendu à la première visite puis servi depuis le cache de Vercel (ISR),
+// régénéré en arrière-plan au rythme de `revalidate`. Sans cet export (même
+// vide), une route à paramètre dynamique était recalculée à chaque requête.
+export async function generateStaticParams() {
+    return [];
+}
+
 const loadCollection = cache(async (id) => getCollection(id));
 
 export async function generateMetadata({ params }) {

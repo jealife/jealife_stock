@@ -6,11 +6,17 @@ import { friendlyErrorMessage } from './errors';
 export const PAGE_SIZE = 24;
 
 // Colonnes ramenées pour une carte de grille. On ne sélectionne jamais `*` :
-// sur une connexion mobile gabonaise, chaque colonne inutile se paie.
+// sur une connexion mobile gabonaise, chaque colonne inutile se paie, et la
+// première page part deux fois dans le HTML (rendu + données d'hydratation).
+// Une carte n'affiche que la vignette : ni `url` (version 2400 px), ni
+// `original_url`, ni les compteurs de vues et de téléchargements n'y
+// servent. Le téléchargement depuis une carte résout les vraies adresses à
+// la demande (voir `downloadMedia`), ce qui garantit aussi qu'aucune adresse
+// de fichier Premium ne transite par une grille.
 const CARD_SELECT = `
-  id, type, url, thumbnail_url, blur_data_url, title, alt_text,
-  location, city, country_code, geo_priority, width, height, duration,
-  likes_count, downloads_count, views_count, created_at, is_premium, status,
+  id, type, thumbnail_url, blur_data_url, title, alt_text,
+  location, city, country_code, width, height, duration,
+  likes_count, created_at, is_premium, status,
   profiles:user_id ( id, username, full_name, avatar_url, is_verified )
 `;
 
@@ -446,7 +452,7 @@ export async function getTopics({ featuredOnly = false, kind = null, limit = 60 
     try {
         let query = supabase
             .from('topics')
-            .select('id, slug, name, description, cover_image_url, total_media, is_featured')
+            .select('id, slug, name, description, cover_image_url, total_media, is_featured, kind')
             .order('is_featured', { ascending: false })
             .order('total_media', { ascending: false })
             .limit(limit);
@@ -468,7 +474,7 @@ export async function getTopics({ featuredOnly = false, kind = null, limit = 60 
 
             const { data: links } = await supabase
                 .from('media_topics')
-                .select('topic_id, media ( thumbnail_url, url )')
+                .select('topic_id, media ( thumbnail_url )')
                 .in('topic_id', ids)
                 .limit(needsCover.length * 5);
 
@@ -552,6 +558,18 @@ export async function getCountryBySlug(slug) {
 
 /** Pays qui ont réellement du contenu, pour ne pas proposer des filtres vides. */
 export async function getActiveCountries() {
+    // Comptage fait par la base (migration 0025), en lecture GET pour
+    // profiter du cache serveur. Repli sur l'ancien comptage tant que la
+    // migration n'est pas appliquée.
+    try {
+        const { data, error } = await supabase.rpc('get_active_countries', undefined, { get: true });
+        if (!error && Array.isArray(data)) {
+            return data.map(({ media_count, ...country }) => ({ ...country, count: Number(media_count) || 0 }));
+        }
+    } catch {
+        // Repli ci-dessous.
+    }
+
     try {
         const { data, error } = await supabase
             .from('media')
@@ -751,6 +769,25 @@ export async function getUserDownloadsTrend(userId, days = 30) {
 // Écriture sur les médias
 // ---------------------------------------------------------------------------
 
+/**
+ * Demande au serveur de rafraîchir les pages publiques après une écriture
+ * (voir /api/revalidate). Sans attente ni erreur visible : l'écriture
+ * elle-même a déjà réussi, au pire les pages se mettent à jour à
+ * l'expiration normale du cache.
+ */
+export async function refreshPublicPages() {
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        await fetch('/api/revalidate', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+    } catch {
+        // Sans conséquence : voir ci-dessus.
+    }
+}
+
 export async function updateMedia(mediaId, updates) {
     try {
         const { data, error } = await supabase
@@ -761,6 +798,7 @@ export async function updateMedia(mediaId, updates) {
             .single();
 
         if (error) throw error;
+        refreshPublicPages();
         return { success: true, data };
     } catch (error) {
         logQueryError('Error updating media:', error);
@@ -789,6 +827,7 @@ export async function deleteMedia(mediaId) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Impossible de supprimer cette photo.");
 
+        refreshPublicPages();
         return { success: true };
     } catch (error) {
         logQueryError('Error deleting media:', error);
@@ -944,11 +983,23 @@ export async function incrementViews(mediaId) {
     }
 }
 
+// Même logique que les vues : passe par une route serveur, seule à voir l'IP.
+// Un téléchargement anonyme n'était jusqu'ici jamais compté (la RPC ne
+// journalisait que les membres connectés), alors que c'est l'essentiel des
+// téléchargements d'une banque d'images (voir migration 0025).
 export async function incrementDownloads(mediaId) {
     try {
-        const { error } = await supabase.rpc('increment_downloads', { media_id: Number(mediaId) });
-        if (error) throw error;
-        return true;
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch('/api/track-download', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+            },
+            body: JSON.stringify({ mediaId: Number(mediaId) }),
+        });
+        const data = await res.json();
+        return !!data.success;
     } catch (error) {
         logQueryError('Error incrementing downloads:', error);
         return false;
@@ -965,7 +1016,7 @@ export async function getUserCollections(userId) {
             .from('collections')
             .select(`
                 id, title, description, is_private, created_at,
-                collection_media ( media ( id, thumbnail_url, url, alt_text, title ) )
+                collection_media ( media ( id, thumbnail_url, alt_text, title ) )
             `)
             .eq('user_id', userId)
             .order('created_at', { ascending: false });
@@ -1088,7 +1139,7 @@ export async function deleteCollection(collectionId) {
 const COLLECTION_CARD_SELECT = `
     id, title, description, slug, cover_image_url, is_private, is_editorial, is_admin_featured, created_at,
     profiles:user_id ( id, username, full_name, avatar_url ),
-    collection_media ( media ( id, thumbnail_url, url, likes_count, downloads_count ) )
+    collection_media ( media ( id, thumbnail_url, likes_count, downloads_count ) )
 `;
 
 function withCollectionMeta(collection) {
@@ -1134,11 +1185,16 @@ const MIN_PHOTOS_TO_SURFACE = 3;
 
 export async function getDiscoverableCollections({ limit = 24 } = {}) {
     try {
+        // Borné : sans limite, chaque affichage de /collections et de
+        // l'accueil rapatriait TOUTES les collections publiques avec TOUTES
+        // leurs photos, une requête dont le poids grandit avec le site. Les
+        // 200 plus récentes suffisent largement à remplir `limit` cartes.
         const { data, error } = await supabase
             .from('collections')
             .select(COLLECTION_CARD_SELECT)
             .eq('is_private', false)
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .limit(200);
 
         if (error) throw error;
 
@@ -1633,6 +1689,7 @@ export async function rejectMedia(mediaId) {
         if (!res.ok) throw new Error(data.error || "Impossible de rejeter ce média.");
 
         await logAdminAction('media.reject', 'media', mediaId);
+        refreshPublicPages();
         return { success: true };
     } catch (error) {
         logQueryError('Error rejecting media:', error);
@@ -1666,6 +1723,7 @@ export async function removeMedia(mediaId) {
         if (!res.ok) throw new Error(data.error || "Impossible de retirer ce média.");
 
         await logAdminAction('media.remove', 'media', mediaId);
+        refreshPublicPages();
         return { success: true };
     } catch (error) {
         logQueryError('Error removing media:', error);

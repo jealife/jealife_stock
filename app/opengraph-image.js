@@ -6,10 +6,13 @@ export const alt = "JEaLiFe Stock : photos et vidéos libres de droits et gratui
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-// Force-dynamic : jamais pré-rendu au build (Supabase n'est pas disponible
-// pendant le SSG). L'image est générée à la demande, le CDN Vercel la met
-// en cache automatiquement à l'edge.
-export const dynamic = "force-dynamic";
+// Régénérée au plus une fois par heure (ISR). En `force-dynamic`, chaque
+// aperçu de lien partagé (WhatsApp, Facebook...) relançait le rendu de
+// l'image et le téléchargement de sa photo de fond : rien n'était mis en
+// cache, contrairement à ce qu'on supposait. Si Supabase est injoignable au
+// moment du rendu, le fond dégradé de repli prend le relais et sera
+// remplacé à la régénération suivante.
+export const revalidate = 3600;
 
 /**
  * Image OpenGraph de la page d'accueil — style inspiré d'Unsplash.
@@ -41,7 +44,7 @@ export default async function OpenGraphImage() {
             const pick = photos[Math.floor(Math.random() * photos.length)];
             const photoUrl = pick.thumbnail_url || pick.url;
 
-            const res = await fetch(photoUrl);
+            const res = await fetch(photoUrl, { cache: "force-cache" });
             const mime = res.headers.get("content-type") || "";
             // `res.ok` ne suffit pas : un CDN en panne peut répondre 200 avec
             // une page d'erreur HTML à la place de l'image (vécu en
@@ -63,7 +66,7 @@ export default async function OpenGraphImage() {
     // ── Logo blanc depuis l'URL publique du site ──
     let logoData = null;
     try {
-        const logoRes = await fetch(`${SITE_URL}/JEaLiFe-Stock-Logo-transparent-blanc.png`);
+        const logoRes = await fetch(`${SITE_URL}/JEaLiFe-Stock-Logo-transparent-blanc.png`, { cache: "force-cache" });
         const logoMime = logoRes.headers.get("content-type") || "";
         if (logoRes.ok && logoMime.startsWith("image/")) {
             const buf = await logoRes.arrayBuffer();

@@ -7,6 +7,14 @@ export const alt = "Profil photographe sur JEaLiFe Stock";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+// Générée à la première demande puis gardée en cache (ISR) : sans ces deux
+// exports, chaque aperçu WhatsApp, Facebook ou X relançait le rendu complet
+// de l'image et le téléchargement de la photo de fond.
+export const revalidate = 86400;
+export async function generateStaticParams() {
+    return [];
+}
+
 /**
  * Récupère la photo la plus vue (views_count) d'un utilisateur.
  */
@@ -53,7 +61,7 @@ export default async function OpenGraphImage({ params }) {
         const photoUrl = photo?.thumbnail_url || photo?.url;
         if (photoUrl) {
             try {
-                const res = await fetch(photoUrl);
+                const res = await fetch(photoUrl, { cache: "force-cache" });
                 const mime = res.headers.get("content-type") || "";
                 // `res.ok` ne suffit pas : un CDN en panne peut répondre 200
                 // avec une page d'erreur HTML à la place de l'image.
@@ -75,7 +83,7 @@ export default async function OpenGraphImage({ params }) {
     // Logo blanc depuis l'URL publique du site
     let logoData = null;
     try {
-        const logoRes = await fetch(`${SITE_URL}/JEaLiFe-Stock-Logo-transparent-blanc.png`);
+        const logoRes = await fetch(`${SITE_URL}/JEaLiFe-Stock-Logo-transparent-blanc.png`, { cache: "force-cache" });
         const logoMime = logoRes.headers.get("content-type") || "";
         if (logoRes.ok && logoMime.startsWith("image/")) {
             const buf = await logoRes.arrayBuffer();

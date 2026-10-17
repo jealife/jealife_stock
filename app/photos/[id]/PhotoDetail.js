@@ -16,6 +16,7 @@ import ReportDialog from "../../components/ReportDialog";
 import PhotoCard from "../../components/PhotoCard";
 import Watermark from "../../components/Watermark";
 import { useAuth } from "../../contexts/AuthContext";
+import { useDataSaver } from "../../lib/data-saver";
 import {
     getMediaById, getRelatedMedia, hasUserLikedMedia, incrementViews, syncTopics,
 } from "../../lib/database";
@@ -65,6 +66,12 @@ export default function PhotoDetail({ initialPhoto }) {
     // en cache depuis la grille) sert de placeholder flouté pendant que l'image
     // display 2400 px se télécharge, puis disparaît en fondu.
     const [imageLoaded, setImageLoaded] = useState(false);
+    // Économie de données : la fiche s'affiche depuis la vignette (800 px)
+    // tant que le visiteur ne demande pas la haute définition, qui charge
+    // alors la version de 2400 px quelle que soit la taille de l'écran
+    // (pour zoomer).
+    const dataSaver = useDataSaver();
+    const [wantsHd, setWantsHd] = useState(false);
 
     // Panneau de tags admin — visible uniquement pour role === 'admin'.
     const [adminTags, setAdminTags] = useState([]);
@@ -241,7 +248,8 @@ export default function PhotoDetail({ initialPhoto }) {
     // une fois débloqué.
     const premiumLocked = photo.isPremium && !premiumAccess?.url;
     const displayUrl = photo.isPremium ? premiumAccess?.url : photo.url;
-    const playbackUrl = photo.isPremium ? premiumAccess?.originalUrl : photo.originalUrl;
+    const playbackUrl = photo.isPremium ? premiumAccess?.originalUrl : photo.originalUrl || photo.url;
+    const lightMode = dataSaver && !wantsHd;
 
     const unlockPremiumPreview = () => {
         if (!photo.isPremium) return;
@@ -359,11 +367,14 @@ export default function PhotoDetail({ initialPhoto }) {
                     {premiumLocked ? (
                         <LockedPreview mediaId={photo.id} thumbnailUrl={photo.thumbnailUrl} width={photo.width} height={photo.height} />
                     ) : isVideo ? (
+                        // En économie de données, la vidéo (souvent plusieurs
+                        // dizaines de Mo) ne démarre qu'à la demande.
                         <video
                             src={playbackUrl}
                             poster={displayUrl || photo.thumbnailUrl}
                             controls
-                            autoPlay
+                            autoPlay={!dataSaver}
+                            preload={dataSaver ? "none" : "metadata"}
                             loop
                             muted
                             playsInline
@@ -387,19 +398,37 @@ export default function PhotoDetail({ initialPhoto }) {
                                     }}
                                 />
                             )}
-                            <Image
-                                src={displayUrl}
+                            {/* Deux tailles proposées au navigateur, qui prend
+                                la plus petite suffisante pour l'écran : la
+                                vignette de 800 px sur la plupart des
+                                téléphones, la version de 2400 px sur grand
+                                écran. L'image n'est plus masquée jusqu'à la
+                                fin du chargement : elle se dessine par-dessus
+                                l'aperçu flou au fil des octets reçus. */}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={lightMode ? photo.thumbnailUrl : displayUrl}
+                                srcSet={!lightMode && !wantsHd && photo.thumbnailUrl && displayUrl && photo.width
+                                    ? `${photo.thumbnailUrl} ${derivativeWidth(photo, 800)}w, ${displayUrl} ${derivativeWidth(photo, 2400)}w`
+                                    : undefined}
+                                sizes="(max-width: 768px) 100vw, 80vw"
                                 alt={photo.alt}
                                 width={photo.width || 1200}
                                 height={photo.height || 800}
-                                unoptimized
-                                className={`w-auto h-auto max-w-full object-contain relative transition-opacity duration-500 ${
-                                    imageLoaded ? "opacity-100" : "opacity-0"
-                                }`}
+                                fetchPriority="high"
+                                className="w-auto h-auto max-w-full object-contain relative"
                                 style={{ maxHeight: "calc(100vh - 140px)" }}
-                                priority
                                 onLoad={() => setImageLoaded(true)}
                             />
+                            {lightMode && (
+                                <button
+                                    type="button"
+                                    onClick={() => setWantsHd(true)}
+                                    className="absolute bottom-3 right-3 z-10 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs font-semibold backdrop-blur-sm hover:bg-black/75 transition-colors"
+                                >
+                                    Afficher en haute définition
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
@@ -785,4 +814,15 @@ function ShareModal({ photo, copied, onCopy, onClose }) {
             </div>
         </div>
     );
+}
+
+/**
+ * Largeur réelle d'un dérivé dont le bord long est limité à `maxEdge`
+ * (800 px pour la vignette, 2400 px pour la version web, voir
+ * lib/images.js), pour l'annoncer correctement dans `srcSet`.
+ */
+function derivativeWidth(photo, maxEdge) {
+    if (!photo.width || !photo.height) return maxEdge;
+    const scale = Math.min(1, maxEdge / Math.max(photo.width, photo.height));
+    return Math.round(photo.width * scale);
 }

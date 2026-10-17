@@ -25,6 +25,21 @@ depuis le SQL Editor du tableau de bord :
    `moderation_mode` (`auto`/`manual`), et les policies RLS qui donnent à un
    admin accès à `/admin` (modération, utilisateurs, thèmes).
 
+Appliquez ensuite toutes les migrations suivantes (`0005` à `0025`), toujours
+dans l'ordre des numéros. La `0025` (audit du 2026-10-17) :
+
+- range les vraies adresses des fichiers Premium dans une table privée
+  (`media_premium_files`), lisible seulement par l'auteur, un acheteur ou un
+  admin : avant elle, l'original d'un média Premium se lisait avec la clé
+  publique ;
+- refuse toute adresse de fichier qui ne pointe pas vers le stockage du site,
+  dans le dossier de l'auteur. Les bases autorisées vivent dans le réglage
+  `media_base_urls` (table `site_settings`, séparées par des espaces), rempli
+  automatiquement à partir des médias existants. **Si vous branchez un domaine
+  personnalisé sur R2, ajoutez sa base à ce réglage** ;
+- répare le recalcul nocturne des compteurs (figé depuis la `0024`) et compte
+  enfin les téléchargements anonymes.
+
 Le bucket `media` et ses politiques sont créés par la migration : il n'y a rien
 à configurer à la main dans l'interface Storage.
 
@@ -74,6 +89,33 @@ npm install && npm run dev
 ```
 
 ---
+
+## Performance
+
+- **Région** : `vercel.json` place les fonctions à Paris (`cdg1`), à côté de la
+  base Supabase (Paris) et au plus près du Gabon. Elles tournaient par défaut
+  à Washington : chaque requête à la base traversait l'Atlantique.
+- **Cache** : côté serveur, les lectures publiques passent par le cache de
+  données de Next (5 min, étiquette `supabase`, voir `app/lib/supabase.js`).
+  Chaque écriture faite depuis le site l'invalide aussitôt
+  (`/api/revalidate`). Fiches photo, profils, collections et images d'aperçu
+  sont servis depuis le cache de Vercel (ISR).
+- **Images** : grilles en vignettes de 800 px ; hero et fiche photo proposent
+  vignette et version 2400 px au navigateur (`srcset`), qui prend la plus
+  petite suffisante.
+- **Stockage** : l'adresse publique `pub-….r2.dev` de Cloudflare est limitée
+  en débit et sans cache. Pour la production, connectez un domaine
+  personnalisé au bucket R2 (ex. `media.jealife.com`), puis mettez à jour
+  `CLOUDFLARE_R2_PUBLIC_URL`, `next.config.mjs` et le réglage
+  `media_base_urls`.
+
+## Économie de données
+
+Réglage proposé dans le menu (Auto / Activé / Désactivé, voir
+`app/lib/data-saver.js`). En « Auto », il suit l'économiseur de données du
+navigateur et la qualité de la connexion. Activé : grandes images en 800 px
+avec un bouton « Afficher en haute définition », vidéos sans lecture
+automatique, bouton de téléchargement principal en taille moyenne.
 
 ## Ce qui structure le projet
 

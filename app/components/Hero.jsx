@@ -1,22 +1,27 @@
 "use client";
 
 import { Search, TrendingUp } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { getPlatformStats } from "../lib/database";
+import { useState } from "react";
 import { formatCount } from "../lib/media";
+import { useDataSaver } from "../lib/data-saver";
 
-const TRENDING = ["Nature", "Portrait", "Forêt", "Océan", "Ville", "Marché"];
+// Repli si le catalogue ne renvoie encore aucun thème.
+const DEFAULT_TRENDING = ["Gabon", "Nature", "Portrait", "Culture", "Libreville", "Marché"];
 
-export default function Hero({ background }) {
+/**
+ * `stats` et `trending` arrivent avec la page (voir app/page.js) : les
+ * chercher après l'affichage changeait le texte du hero sous les yeux du
+ * visiteur et coûtait une requête de plus depuis le téléphone. Les
+ * tendances sont les thèmes réellement les plus fournis du catalogue, plus
+ * une liste écrite à la main.
+ */
+export default function Hero({ background, stats = null, trending = [] }) {
     const router = useRouter();
-    const [stats, setStats] = useState(null);
+    const dataSaver = useDataSaver();
     const [term, setTerm] = useState("");
-    const [loaded, setLoaded] = useState(false);
-
-    useEffect(() => { getPlatformStats().then(setStats); }, []);
+    const trendingTerms = trending.length > 0 ? trending.slice(0, 6) : DEFAULT_TRENDING;
 
     const submitSearch = (event) => {
         event.preventDefault();
@@ -29,32 +34,38 @@ export default function Hero({ background }) {
 
     return (
         <div className="relative h-[65vh] min-h-[500px] w-full flex flex-col items-center justify-center text-white mb-8 overflow-hidden">
-            <div className="absolute inset-0 z-0">
-                {/* Couche de repli : thumbnail floutée chargée instantanément
-                    (souvent déjà en cache depuis la grille d'accueil). Elle est
-                    visible pendant le téléchargement du fond full-res, puis
-                    masquée par un fondu dès que ce dernier est prêt. */}
-                <div
-                    className="absolute inset-0 bg-cover bg-center transition-opacity duration-700"
-                    style={{
-                        backgroundImage: background.blurDataURL
-                            ? `url(${background.blurDataURL})`
-                            : `url(${background.thumbnailUrl})`,
-                        filter: "blur(12px)",
-                        transform: "scale(1.05)", /* masque les bords flous */
-                        opacity: loaded ? 0 : 1,
-                    }}
-                />
-                {/* Image full-res : s'affiche en fondu une fois chargée */}
-                <Image
-                    src={background.url}
-                    alt=""
-                    fill
-                    priority
-                    unoptimized
-                    className={`object-cover transition-opacity duration-700 ${loaded ? "opacity-100" : "opacity-0"}`}
-                    onLoad={() => setLoaded(true)}
-                />
+            <div className="absolute inset-0 z-0 bg-zinc-900">
+                {/* Aperçu flou (quelques centaines d'octets, déjà dans le
+                    HTML) visible tout de suite, sous la vraie image qui se
+                    dessine par-dessus au fil du téléchargement. L'image
+                    n'est plus masquée jusqu'à son chargement complet : c'est
+                    le plus grand élément de la page, et la cacher retardait
+                    d'autant le moment où le visiteur voit quelque chose. */}
+                {background.blurDataURL && (
+                    <div
+                        aria-hidden="true"
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{
+                            backgroundImage: `url(${background.blurDataURL})`,
+                            filter: "blur(12px)",
+                            transform: "scale(1.05)", /* masque les bords flous */
+                        }}
+                    />
+                )}
+                {/* Sur téléphone (ou en économie de données), la vignette de
+                    800 px suffit à un fond assombri sous du texte : une
+                    fraction du poids de la version de 2400 px. */}
+                <picture>
+                    {!dataSaver && <source media="(min-width: 768px)" srcSet={background.url} />}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={background.thumbnailUrl || background.url}
+                        alt=""
+                        fetchPriority="high"
+                        decoding="async"
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                </picture>
                 <div className="absolute inset-0 bg-black/35" />
                 <div className="absolute inset-0 bg-linear-to-b from-black/50 via-transparent to-black/60" />
             </div>
@@ -134,7 +145,7 @@ export default function Hero({ background }) {
                     <span className="opacity-70 flex items-center gap-1">
                         <TrendingUp className="w-3 h-3" /> Tendances :
                     </span>
-                    {TRENDING.map((tag) => (
+                    {trendingTerms.map((tag) => (
                         <Link
                             key={tag}
                             href={`/?q=${encodeURIComponent(tag.toLowerCase())}`}

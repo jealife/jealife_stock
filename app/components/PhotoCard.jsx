@@ -12,11 +12,13 @@ import Watermark from "./Watermark";
 import { locationLabel, mediaUrl } from "../lib/media";
 
 export default function PhotoCard({ photo, liked = false, hideActions = false, priority = false }) {
-    // Chargement progressif : sans cet état, les images d'une même page
-    // "popaient" toutes en même temps dès qu'elles franchissaient le seuil
-    // de lazy-loading, ce qui donnait l'impression que tout s'affichait
-    // d'un bloc. Chacune garde désormais son propre skeleton et ne
-    // s'affiche qu'une fois réellement prête.
+    // Chargement progressif : chaque carte garde son propre fond (aperçu
+    // flou, ou à défaut un skeleton) tant que sa vignette n'est pas là.
+    // L'image n'est plus masquée (opacité 0) jusqu'à la fin de son
+    // chargement : rendue par le serveur, elle restait invisible jusqu'à ce
+    // que tout le JavaScript de la page soit chargé, ce qui sur une 3G
+    // retardait de plusieurs secondes l'affichage de la grille. Elle se
+    // dessine maintenant par-dessus son fond dès que ses octets arrivent.
     const [loaded, setLoaded] = useState(false);
 
     if (!photo) return null;
@@ -33,14 +35,12 @@ export default function PhotoCard({ photo, liked = false, hideActions = false, p
                     <Link href={mediaUrl(photo)} className="block">
                         {hasDimensions ? (
                             <div className="relative w-full" style={{ aspectRatio: `${photo.width} / ${photo.height}` }}>
-                                {!loaded && <ImageLoader />}
+                                {!loaded && !photo.blurDataURL && <ImageLoader />}
                                 <Image
                                     src={photo.thumbnailUrl}
                                     alt={photo.alt}
                                     fill
-                                    className={`object-cover transform transition-all duration-700 group-hover:scale-105 cursor-zoom-in ${
-                                        loaded ? "opacity-100" : "opacity-0"
-                                    }`}
+                                    className="object-cover transform transition-transform duration-700 group-hover:scale-105 cursor-zoom-in"
                                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                                     priority={priority}
                                     unoptimized
@@ -61,9 +61,7 @@ export default function PhotoCard({ photo, liked = false, hideActions = false, p
                                     width={0}
                                     height={0}
                                     sizes="100vw"
-                                    className={`w-full h-auto block object-cover transform transition-all duration-700 group-hover:scale-105 cursor-zoom-in ${
-                                        loaded ? "opacity-100" : "opacity-0"
-                                    }`}
+                                    className="relative w-full h-auto block object-cover transform transition-transform duration-700 group-hover:scale-105 cursor-zoom-in"
                                     loading="lazy"
                                     unoptimized
                                     onLoad={() => setLoaded(true)}

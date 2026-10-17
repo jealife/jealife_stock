@@ -11,7 +11,7 @@ import ExifReader from "exifreader";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 import { upsertProfile } from "../lib/auth";
-import { syncTopics, getTopics, getCountries, getPlatformStats, getSetting, getPremiumPricing } from "../lib/database";
+import { syncTopics, getTopics, getCountries, getPlatformStats, getSetting, getPremiumPricing, refreshPublicPages } from "../lib/database";
 import { processImage, watermarkThumbnail, formatFileSize } from "../lib/images";
 import { slugifyClient } from "../lib/media";
 import { friendlyErrorMessage } from "../lib/errors";
@@ -23,6 +23,18 @@ import LocationInput from "../components/LocationInput";
 // (jusqu'à 50 Mo) domine largement le temps d'envoi, la vignette et la
 // version web sont petites, la vérification qualité et la publication sont
 // des appels réseau courts.
+
+/**
+ * Jeton aléatoire pour les chemins de fichiers. `crypto.randomUUID` manque
+ * sur les navigateurs Android antérieurs à 2021, encore courants : repli sur
+ * `getRandomValues`, disponible partout.
+ */
+function randomToken() {
+    if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 const UPLOAD_STAGES = {
     quality: { percent: 15, label: "Vérification de la qualité…" },
     thumbnail: { percent: 30, label: "Envoi de la vignette…" },
@@ -863,7 +875,12 @@ export default function SubmitForm() {
         }
         batchHashes.push(phash);
 
-        const folder = `${user.id}/${Date.now()}-${item.id}`;
+        // Segment aléatoire dans le chemin : les fichiers R2 sont publics, et
+        // un chemin fait de l'identifiant (visible sur le profil) et de
+        // l'heure d'envoi (proche de `created_at`, public lui aussi) se
+        // devinait. Avec 122 bits aléatoires, l'adresse d'un original
+        // Premium ne peut plus être reconstituée sans l'avoir achetée.
+        const folder = `${user.id}/${Date.now()}-${randomToken()}`;
         const { extension, mimeType } = item.processed;
 
         // Envoi direct navigateur → Cloudflare R2 via une URL signée à usage
@@ -1088,6 +1105,11 @@ export default function SubmitForm() {
         });
 
         setPublishing(false);
+
+        // Les nouvelles images doivent apparaître tout de suite sur
+        // l'accueil, les thèmes et le profil, sans attendre l'expiration du
+        // cache des pages publiques.
+        if (succeeded.size > 0) refreshPublicPages();
 
         // L'écran de succès n'apparaît que si plus rien n'est en attente :
         // sinon on reste sur la liste, chaque échec affiché sur sa carte,
