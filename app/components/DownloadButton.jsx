@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { getSetting, getPremiumPricing, spendCreditsForDownload } from "../lib/database";
 import { downloadOptionsFor, downloadMedia, mediaUrl, fetchPhotoAccess } from "../lib/media";
+import { useDataSaver } from "../lib/data-saver";
 
 /**
  * Téléchargement avec choix de format.
@@ -194,6 +195,11 @@ function PremiumDownload({ media, onDownloaded }) {
 function FreeDownloadButton({ media, variant = "compact", onDownloaded }) {
     const options = downloadOptionsFor(media);
     const isVideo = media?.type === "video";
+    // En économie de données, le bouton principal livre la taille moyenne
+    // (1920 px, quelques centaines de Ko) plutôt que l'original, qui peut
+    // peser plus de 10 Mo. L'original reste dans le menu des tailles.
+    const dataSaver = useDataSaver();
+    const quickKey = !isVideo && dataSaver ? "medium" : "original";
     const [open, setOpen] = useState(false);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState(null);
@@ -253,7 +259,7 @@ function FreeDownloadButton({ media, variant = "compact", onDownloaded }) {
         return (
             <div className="relative flex items-center" ref={containerRef}>
                 <button
-                    onClick={() => run("original")}
+                    onClick={() => run(quickKey)}
                     disabled={busy}
                     className="h-9 px-3 sm:px-4 bg-green-600 text-white rounded-l-md font-medium text-[13px] hover:bg-green-700 transition-all shadow-sm flex items-center gap-2 disabled:opacity-70"
                 >
@@ -262,9 +268,11 @@ function FreeDownloadButton({ media, variant = "compact", onDownloaded }) {
                     ) : (
                         <>
                             <span className="hidden sm:inline">
-                                {isVideo ? "Télécharger la vidéo" : "Télécharger gratuitement"}
+                                {isVideo
+                                    ? "Télécharger la vidéo"
+                                    : quickKey === "medium" ? "Télécharger (taille moyenne)" : "Télécharger gratuitement"}
                             </span>
-                            <span className="sm:hidden">Télécharger</span>
+                            <span className="sm:hidden">{quickKey === "medium" ? "Télécharger (moyen)" : "Télécharger"}</span>
                         </>
                     )}
                 </button>
