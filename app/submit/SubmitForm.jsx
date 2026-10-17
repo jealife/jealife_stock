@@ -147,7 +147,10 @@ async function runQualityCheck(processed, type) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Cette image n'a pas passé le contrôle qualité.");
 
-    return data.phash;
+    // Le ticket atteste côté serveur que CETTE version web précise a passé
+    // les contrôles : /api/publish-media ne les refait pas s'il retrouve
+    // exactement les mêmes octets sur R2.
+    return { phash: data.phash, ticket: data.ticket || null };
 }
 
 function detectType(file) {
@@ -868,7 +871,7 @@ export default function SubmitForm() {
             patchItem(item.id, { stage: UPLOAD_STAGES[key].label, percent: UPLOAD_STAGES[key].percent });
 
         goToStage("quality");
-        const phash = await runQualityCheck(item.processed, item.type);
+        const { phash, ticket } = await runQualityCheck(item.processed, item.type);
 
         if (batchHashes.some((seen) => phashDistance(seen, phash) <= DUPLICATE_THRESHOLD)) {
             throw new Error("Cette image fait doublon avec une autre du même envoi. Retirez-la.");
@@ -924,68 +927,75 @@ export default function SubmitForm() {
         const thumbnailBlob = item.isPremium
             ? await watermarkThumbnail(item.processed.thumbnail, mimeType)
             : item.processed.thumbnail;
-        const thumbnailUrl = await upload(`${folder}/thumb.${extension}`, thumbnailBlob, mimeType);
+        const thumbnailPath = `${folder}/thumb.${extension}`;
+        await upload(thumbnailPath, thumbnailBlob, mimeType);
 
         goToStage("display");
-        const displayUrl = await upload(`${folder}/display.${extension}`, item.processed.display, mimeType);
+        const displayPath = `${folder}/display.${extension}`;
+        await upload(displayPath, item.processed.display, mimeType);
 
         goToStage("original");
-        const originalExtension = item.file.name.split(".").pop()?.toLowerCase() || "jpg";
-        const originalUrl = await upload(
-            `${folder}/original.${originalExtension}`,
-            item.file,
-            item.file.type || "image/jpeg"
-        );
+        // Extension réduite à des caractères sûrs : le serveur n'accepte que
+        // `original.<lettres et chiffres>`.
+        const originalExtension = (item.file.name.split(".").pop() || "")
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "")
+            .slice(0, 5) || "jpg";
+        const originalPath = `${folder}/original.${originalExtension}`;
+        await upload(originalPath, item.file, item.file.type || "image/jpeg");
 
+        // La ligne `media` est écrite par le serveur, qui relit d'abord les
+        // fichiers déposés sur R2 (voir /api/publish-media) : plus rien de
+        // ce que le navigateur déclare n'est cru sur parole.
         goToStage("publish");
         const altText = item.altText.trim();
-        const { data: mediaRecord, error: insertError } = await supabase
-            .from("media")
-            .insert({
-                user_id: user.id,
-                type: item.type,
-                url: displayUrl,
-                original_url: originalUrl,
-                thumbnail_url: thumbnailUrl,
-                blur_data_url: item.processed.blurDataURL,
-                phash,
-                // Un seul champ saisi sert de titre et de texte alternatif :
-                // l'un porte le référencement et l'accessibilité, l'autre
-                // l'affichage et l'adresse de la page. Le contributeur peut
-                // les dissocier ensuite depuis la page de modification.
-                title: altText,
-                alt_text: altText,
-                description: item.description.trim() || null,
-                camera: item.camera.trim() || null,
-                lens: item.lens.trim() || null,
-                focal_length: item.focalLength.trim() || null,
-                aperture: item.aperture.trim() || null,
-                shutter_speed: item.shutterSpeed.trim() || null,
-                iso: item.iso,
-                tags: item.tags,
-                location: item.location.trim() || null,
-                city: item.city.trim() || null,
-                country_code: item.countryCode || null,
-                is_premium: item.isPremium,
-                // `null` sauf pour un contributeur autorisé à fixer son
-                // propre prix (voir migration 0022) — un déclencheur en
-                // base revalide de toute façon la fourchette et le statut,
-                // ceci n'est qu'un confort d'interface.
-                custom_credits_cost: item.isPremium && item.customPrice != null ? Number(item.customPrice) : null,
-                width: item.processed.width,
-                height: item.processed.height,
-                // Lue sur la vidéo pendant l'extraction de l'aperçu ; nulle
-                // pour une image. Sans elle, le badge de durée des cartes
-                // vidéo ne s'affichait jamais.
-                duration: item.processed.duration,
-                file_size: item.file.size,
-                mime_type: item.file.type || null,
-                // Le statut n'est pas décidé ici : un déclencheur côté
-                // serveur (migration 0004) l'impose selon le réglage
-                // `moderation_mode` choisi par un admin.
-            })
-            .select("id, status")
-            .single();
+        let mediaRecord = null;
+        let insertError = null;
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error("Session expirée, reconnectez-vous.");
+
+            const res = await fetchWithRetry("/api/publish-media", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({
+                    type: item.type,
+                    files: { thumbnail: thumbnailPath, display: displayPath, original: originalPath },
+                    ticket,
+                    // Un seul champ saisi sert de titre et de texte
+                    // alternatif ; le contributeur peut les dissocier
+                    // ensuite depuis la page de modification.
+                    altText,
+                    description: item.description,
+                    camera: item.camera,
+                    lens: item.lens,
+                    focalLength: item.focalLength,
+                    aperture: item.aperture,
+                    shutterSpeed: item.shutterSpeed,
+                    iso: item.iso,
+                    tags: item.tags,
+                    location: item.location,
+                    city: item.city,
+                    countryCode: item.countryCode || null,
+                    isPremium: item.isPremium,
+                    // Revalidé en base (fourchette, droit de fixer son prix).
+                    customPrice: item.isPremium && item.customPrice != null ? Number(item.customPrice) : null,
+                    // Dimensions et durée d'une vidéo : le serveur ne décode
+                    // pas les vidéos, il les recoupe avec la trame extraite.
+                    width: item.processed.width,
+                    height: item.processed.height,
+                    duration: item.processed.duration,
+                }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || "La publication a échoué. Réessayez.");
+            mediaRecord = data;
+        } catch (err) {
+            insertError = err;
+        }
 
         if (insertError) {
             // Les 3 fichiers sont déjà sur R2 à ce stade : sans ce nettoyage,
@@ -1002,13 +1012,7 @@ export default function SubmitForm() {
                             "Content-Type": "application/json",
                             Authorization: `Bearer ${cleanupSession.access_token}`,
                         },
-                        body: JSON.stringify({
-                            paths: [
-                                `${folder}/thumb.${extension}`,
-                                `${folder}/display.${extension}`,
-                                `${folder}/original.${originalExtension}`,
-                            ],
-                        }),
+                        body: JSON.stringify({ paths: [thumbnailPath, displayPath, originalPath] }),
                     });
                 }
             } catch (cleanupErr) {

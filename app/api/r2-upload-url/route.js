@@ -1,6 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { getR2UploadUrl, r2PublicUrl, r2Configured } from "../../lib/r2";
+import { serviceClient } from "../../lib/server-supabase";
+import { parseOwnedPath, pathsAreReferenced } from "../../lib/media-files";
 
 // Doit rester aligné sur MAX_FILE_SIZE côté formulaire (app/submit/SubmitForm.jsx).
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
@@ -74,8 +76,20 @@ export async function POST(request) {
         if (size > MAX_UPLOAD_BYTES) {
             return NextResponse.json({ error: "Le fichier dépasse la taille maximale de 50 Mo." }, { status: 413 });
         }
-        if (!path.startsWith(`${user.id}/`)) {
+        if (!parseOwnedPath(path, user.id)) {
             return NextResponse.json({ error: "Chemin non autorisé." }, { status: 403 });
+        }
+        // Les fichiers d'un média existant sont immuables : sans ce refus, on
+        // pouvait réécrire après coup la vignette ou la version web d'une
+        // photo déjà validée par n'importe quelle image, sans contrôle. Un
+        // changement de vignette passe par un nouveau chemin, vérifié par
+        // /api/replace-thumbnail.
+        const service = serviceClient();
+        if (!service) {
+            return NextResponse.json({ error: "Clé de service Supabase manquante côté serveur." }, { status: 500 });
+        }
+        if (await pathsAreReferenced(service, [path])) {
+            return NextResponse.json({ error: "Ce fichier appartient déjà à un média publié." }, { status: 409 });
         }
         // Sans ce contrôle, n'importe quel type MIME pouvait être signé (ex:
         // text/html) puis servi depuis le domaine public R2 — cette route

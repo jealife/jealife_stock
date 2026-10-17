@@ -1,6 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { deleteR2Objects, r2PublicUrl } from "../../lib/r2";
+import { deleteR2Objects } from "../../lib/r2";
+import { serviceClient } from "../../lib/server-supabase";
+import { parseOwnedPath, pathsAreReferenced } from "../../lib/media-files";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY =
@@ -36,36 +38,25 @@ export async function POST(request) {
         }
 
         const { paths } = await request.json();
-        if (!Array.isArray(paths) || paths.length === 0) {
+        if (!Array.isArray(paths) || paths.length === 0 || paths.length > 10) {
             return NextResponse.json({ error: "Aucun chemin fourni." }, { status: 400 });
         }
 
         // Même garde-fou que /api/r2-upload-url : personne ne peut faire
         // supprimer un fichier hors de son propre dossier.
-        const invalid = paths.find((path) => typeof path !== "string" || !path.startsWith(`${user.id}/`));
-        if (invalid) {
+        if (paths.some((path) => !parseOwnedPath(path, user.id))) {
             return NextResponse.json({ error: "Chemin non autorisé." }, { status: 403 });
         }
 
         // Cette route ne sert qu'à ramasser des fichiers orphelins, jamais à
-        // vider une publication existante. Le seul contrôle de propriété
-        // laissait pourtant un membre supprimer les fichiers de ses propres
-        // photos en ligne : la ligne `media` survivait, la page restait
-        // accessible, et l'image y était définitivement cassée. On refuse donc
-        // tout chemin encore référencé par un média. Une requête par colonne
-        // plutôt qu'un `.or()` assemblé à la main : les URL contiennent des
-        // caractères que la syntaxe de filtre PostgREST interprète.
-        const urls = paths.map(r2PublicUrl);
-        const lookups = await Promise.all(
-            ["url", "thumbnail_url", "original_url"].map((column) =>
-                supabase.from("media").select("id").in(column, urls).limit(1)
-            )
-        );
-
-        const lookupError = lookups.find((result) => result.error)?.error;
-        if (lookupError) throw lookupError;
-
-        if (lookups.some((result) => (result.data || []).length > 0)) {
+        // vider une publication existante : on refuse tout chemin encore
+        // utilisé par un média, Premium compris (ses vraies adresses vivent
+        // dans une table que la RLS cache, d'où la clé de service).
+        const service = serviceClient();
+        if (!service) {
+            return NextResponse.json({ error: "Clé de service Supabase manquante côté serveur." }, { status: 500 });
+        }
+        if (await pathsAreReferenced(service, paths)) {
             return NextResponse.json(
                 { error: "Ces fichiers appartiennent à un média publié. Supprimez le média lui-même." },
                 { status: 409 }

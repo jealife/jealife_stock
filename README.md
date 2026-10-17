@@ -25,8 +25,10 @@ depuis le SQL Editor du tableau de bord :
    `moderation_mode` (`auto`/`manual`), et les policies RLS qui donnent à un
    admin accès à `/admin` (modération, utilisateurs, thèmes).
 
-Appliquez ensuite toutes les migrations suivantes (`0005` à `0025`), toujours
-dans l'ordre des numéros. La `0025` (audit du 2026-10-17) :
+Appliquez ensuite toutes les migrations suivantes (`0005` à `0026`), toujours
+dans l'ordre des numéros, et toujours **après** avoir déployé le code qui va
+avec. La `0026` réserve la publication au serveur (`/api/publish-media`). La
+`0025` (audit du 2026-10-17) :
 
 - range les vraies adresses des fichiers Premium dans une table privée
   (`media_premium_files`), lisible seulement par l'auteur, un acheteur ou un
@@ -158,6 +160,15 @@ Les trois dérivés partent directement du navigateur vers Cloudflare R2 (`app/l
 reçoit jamais le fichier lui-même, seulement l'URL R2 finale à enregistrer en
 base. Les fichiers déjà publiés avant ce changement se reprennent avec
 `scripts/migrate-to-r2.mjs` (voir l'en-tête du script).
+
+### Publication
+
+Le navigateur prépare les dérivés et les dépose sur R2, mais n'écrit jamais
+la ligne `media` : `/api/publish-media` relit les fichiers stockés, vérifie
+qu'ils forment une seule image et qu'elle a passé le contrôle qualité
+(`/api/moderate-upload`, ticket signé avec `MODERATION_SECRET`, ou à défaut
+la clé de service), puis publie. Les fichiers d'un média publié ne peuvent
+plus être réécrits ; changer de vignette passe par `/api/replace-thumbnail`.
 
 ### Recherche
 
