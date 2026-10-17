@@ -73,36 +73,55 @@ function drawResized(bitmap, width, height) {
 const WATERMARK_TEXT = "JEALIFE STOCK";
 
 /**
- * Fusionne le filigrane directement dans les pixels du canevas — même motif
- * (rotation -28°, texte répété) que le calque CSS de Watermark.jsx, mais
- * cette fois dans le fichier lui-même. Un clic droit → « Enregistrer
- * l'image » sur une vignette Premium récupère donc une image déjà
- * filigranée, pas le fichier nu ; un calque posé dans le navigateur ne
- * protège jamais que l'écran, pas le fichier réel.
+ * Fusionne le filigrane directement dans les pixels du canevas : un clic
+ * droit, « Enregistrer l'image » sur une vignette Premium récupère donc une
+ * image déjà filigranée, pas le fichier nu.
+ *
+ * Volontairement discret : texte semi-transparent, peu répété, en
+ * quinconce, proportionné à l'image. La première version (texte serré tous
+ * les 190 px, à 55 % d'opacité, plus un second calque posé par-dessus dans
+ * le navigateur) couvrait la photo au point de la rendre illisible. Les
+ * proportions sont exprimées par rapport au plus grand côté, pour un rendu
+ * identique quelle que soit la taille de la vignette.
  */
+export const WATERMARK = {
+    text: WATERMARK_TEXT,
+    angle: -28,
+    fontRatio: 0.03,
+    stepXRatio: 0.5,
+    stepYRatio: 0.22,
+    fill: "rgba(255,255,255,0.30)",
+    stroke: "rgba(0,0,0,0.12)",
+};
+
 function drawWatermarkTile(canvas) {
     const context = canvas.getContext("2d");
     const { width, height } = canvas;
-    const stepX = 190;
-    const stepY = 100;
+    const unit = Math.max(width, height);
+    const fontSize = Math.max(12, Math.round(unit * WATERMARK.fontRatio));
+    const stepX = Math.round(unit * WATERMARK.stepXRatio);
+    const stepY = Math.round(unit * WATERMARK.stepYRatio);
 
     context.save();
     context.translate(width / 2, height / 2);
-    context.rotate((-28 * Math.PI) / 180);
-    context.font = "800 19px sans-serif";
+    context.rotate((WATERMARK.angle * Math.PI) / 180);
+    context.font = `700 ${fontSize}px sans-serif`;
+    if ("letterSpacing" in context) context.letterSpacing = `${Math.round(fontSize * 0.08)}px`;
     context.textBaseline = "alphabetic";
-    context.fillStyle = "rgba(255,255,255,0.55)";
-    context.strokeStyle = "rgba(0,0,0,0.35)";
+    context.fillStyle = WATERMARK.fill;
+    context.strokeStyle = WATERMARK.stroke;
     context.lineWidth = 0.6;
 
-    // Le canevas pivote autour de son centre : il faut carreler une zone au
+    // Le canevas pivote autour de son centre : il faut couvrir une zone au
     // moins aussi large que sa diagonale pour ne laisser aucun coin nu une
-    // fois la rotation appliquée.
+    // fois la rotation appliquée. Une rangée sur deux est décalée d'un
+    // demi-pas, pour éviter l'effet de quadrillage.
     const diag = Math.ceil(Math.sqrt(width * width + height * height));
-    for (let y = -diag; y < diag; y += stepY) {
-        for (let x = -diag; x < diag; x += stepX) {
-            context.strokeText(WATERMARK_TEXT, x, y);
-            context.fillText(WATERMARK_TEXT, x, y);
+    for (let y = -diag, row = 0; y < diag; y += stepY, row++) {
+        const offset = row % 2 ? stepX / 2 : 0;
+        for (let x = -diag + offset; x < diag; x += stepX) {
+            context.strokeText(WATERMARK.text, x, y);
+            context.fillText(WATERMARK.text, x, y);
         }
     }
     context.restore();

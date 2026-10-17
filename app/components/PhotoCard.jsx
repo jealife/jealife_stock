@@ -8,7 +8,6 @@ import LikeButton from "./LikeButton";
 import DownloadButton from "./DownloadButton";
 import SaveToCollectionButton from "./SaveToCollectionButton";
 import ImageLoader from "./ImageLoader";
-import Watermark from "./Watermark";
 import { locationLabel, mediaUrl } from "../lib/media";
 
 export default function PhotoCard({ photo, liked = false, hideActions = false, priority = false }) {
@@ -71,7 +70,6 @@ export default function PhotoCard({ photo, liked = false, hideActions = false, p
                             </div>
                         )}
                     </Link>
-                    {photo.isPremium && <Watermark mediaId={photo.id} />}
                 </div>
 
                 {/* Badge « En cours d'analyse » — visible uniquement par le contributeur

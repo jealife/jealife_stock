@@ -14,7 +14,6 @@ import DownloadButton from "../../components/DownloadButton";
 import SaveToCollectionButton from "../../components/SaveToCollectionButton";
 import ReportDialog from "../../components/ReportDialog";
 import PhotoCard from "../../components/PhotoCard";
-import Watermark from "../../components/Watermark";
 import { useAuth } from "../../contexts/AuthContext";
 import { useDataSaver } from "../../lib/data-saver";
 import {
@@ -367,7 +366,7 @@ export default function PhotoDetail({ initialPhoto }) {
             <div className="w-full bg-white dark:bg-zinc-950 sm:px-4 lg:px-8 py-0 sm:py-6 flex justify-center">
                 <div className="relative flex items-center justify-center bg-gray-50 dark:bg-zinc-900 overflow-hidden sm:rounded-[2px]">
                     {premiumLocked ? (
-                        <LockedPreview mediaId={photo.id} thumbnailUrl={photo.thumbnailUrl} width={photo.width} height={photo.height} />
+                        <LockedPreview thumbnailUrl={photo.thumbnailUrl} width={photo.width} height={photo.height} />
                     ) : isVideo ? (
                         // En économie de données, la vidéo (souvent plusieurs
                         // dizaines de Mo) ne démarre qu'à la demande.
@@ -707,7 +706,7 @@ export default function PhotoDetail({ initialPhoto }) {
  * /api/photo-access), le filigrane n'est qu'une dissuasion supplémentaire
  * si quelqu'un l'enregistrait quand même.
  */
-function LockedPreview({ mediaId, thumbnailUrl, width, height }) {
+function LockedPreview({ thumbnailUrl, width, height }) {
     // Le filigrane et la vignette sont tous les deux en `position: absolute`
     // (voir plus bas) : ils ne comptent donc pour rien dans le calcul de
     // taille de ce conteneur. Avec juste `w-full` (un pourcentage) posé sur
@@ -728,13 +727,10 @@ function LockedPreview({ mediaId, thumbnailUrl, width, height }) {
             }}
         >
             {thumbnailUrl && (
-                // Depuis peu, le filigrane est fusionné dans la vignette elle-même
-                // (voir lib/images.js) pour les photos publiées ou republiées après
-                // ce changement : un clic droit → « Enregistrer l'image » récupère
-                // alors une image déjà filigranée, pas le fichier nu. Les photos
-                // Premium publiées avant restent avec une vignette propre tant
-                // qu'elles ne sont pas rééditées — le calque ci-dessous (Watermark)
-                // reste donc affiché dans tous les cas, en secours.
+                // Le filigrane est fusionné dans la vignette elle-même (voir
+                // lib/images.js) : un clic droit, « Enregistrer l'image »
+                // récupère une image déjà filigranée. Plus de second calque
+                // par-dessus : les deux superposés couvraient la photo.
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                     src={thumbnailUrl}
@@ -744,10 +740,9 @@ function LockedPreview({ mediaId, thumbnailUrl, width, height }) {
                     className="absolute inset-0 w-full h-full object-cover"
                 />
             )}
-            <Watermark mediaId={mediaId} />
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-black/55 backdrop-blur-sm rounded-full whitespace-nowrap">
                 <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
-                <span className="text-white text-xs font-semibold">Aperçu Premium — débloquez la version complète avec des crédits</span>
+                <span className="text-white text-xs font-semibold">Aperçu Premium : débloquez la version complète avec des crédits</span>
             </div>
         </div>
     );
