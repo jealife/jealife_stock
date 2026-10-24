@@ -9,9 +9,6 @@ import Link from "next/link";
 import Hero from "./components/Hero";
 import TopicBar from "./components/TopicBar";
 import MasonryGrid from "./components/MasonryGrid";
-import CategorySection from "./components/CategorySection";
-import FeaturedTopics from "./components/FeaturedTopics";
-import DiscoveryPanel from "./components/DiscoveryPanel";
 import GridFallback from "./components/GridFallback";
 import { pickShowcaseImage } from "./lib/auth-images";
 import {
@@ -35,13 +32,12 @@ export default async function Home({ searchParams }) {
   // filtres de l'adresse : sans elle, le HTML servi aux robots ne contenait
   // aucun lien vers une fiche image. Les recherches restent chargées côté
   // client, elles n'ont pas vocation à être indexées.
-  const [initialItems, resultsCount, heroPhoto, stats, topics, featuredTopics] = await Promise.all([
+  const [initialItems, resultsCount, heroPhoto, stats, topics] = await Promise.all([
     query ? null : getMedia({ type: "photo", limit: PAGE_SIZE, country, orientation, sort }),
     query ? countMedia({ query, type: "photo", country, orientation }) : null,
     query ? null : getHeroBackground(),
     query ? null : getPlatformStats(),
     query ? [] : getTopics({ limit: 30 }),
-    query ? [] : getTopics({ featuredOnly: true, kind: "category", limit: 8 }),
   ]);
 
   // Une vraie photo du catalogue plutôt qu'un visuel de décor Unsplash : le
@@ -61,38 +57,26 @@ export default async function Home({ searchParams }) {
       .filter((name) => name.toLowerCase() !== "gabon"),
   ].slice(0, 6);
 
+  // À la manière d'Unsplash, les photos suivent directement le hero : pas de
+  // blocs intermédiaires à faire défiler avant d'atteindre ce que le
+  // visiteur est venu chercher. Thèmes et collections restent à un clic,
+  // dans la barre de thèmes et la navigation.
   return (
     <main className="min-h-screen bg-white dark:bg-zinc-950">
       {!query && <Hero background={heroBackground} stats={stats} trending={trending} />}
-      {!query && <CategorySection stats={stats} />}
 
-      {!query && (
-        <Suspense fallback={null}>
-          <DiscoveryPanel />
-        </Suspense>
-      )}
-
-      <Suspense fallback={<div className="h-16 border-b border-gray-100" />}>
+      <Suspense fallback={<div className="h-14 border-b border-gray-200 dark:border-zinc-800" />}>
         <TopicBar />
       </Suspense>
 
-      {query ? (
-        <div className="max-w-[1600px] mx-auto px-4 pt-6 pb-2">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-100">
-            Images « {query} »
+      {query && (
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-5 pt-8 md:pt-12 pb-2">
+          <h1 className="text-3xl md:text-[40px] leading-tight font-bold tracking-tight text-gray-900 dark:text-zinc-100 first-letter:uppercase">
+            {query}
           </h1>
-          <p className="text-gray-500 dark:text-zinc-400 text-sm mt-1">
+          <p className="text-gray-500 dark:text-zinc-400 mt-2">
             {resultsCount} image{resultsCount > 1 ? "s" : ""} libre{resultsCount > 1 ? "s" : ""} de
             droits de haute qualité.
-          </p>
-        </div>
-      ) : (
-        <div className="max-w-[1600px] mx-auto px-4 pt-10 pb-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-zinc-100 mb-2">
-            Les dernières images
-          </h2>
-          <p className="text-gray-500 dark:text-zinc-400">
-            Ajoutées récemment par la communauté.
           </p>
         </div>
       )}
@@ -101,22 +85,21 @@ export default async function Home({ searchParams }) {
         <MasonryGrid initialItems={initialItems} />
       </Suspense>
 
-      {!query && <FeaturedTopics topics={featuredTopics} />}
-
-      <section className="bg-gray-50 dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800 py-20 text-center mt-20 px-4">
-        <h2 className="text-3xl font-bold mb-4 text-gray-900 dark:text-zinc-100">
-          Vous photographiez ? Cette banque est la vôtre.
-        </h2>
-        <p className="text-gray-500 dark:text-zinc-400 max-w-xl mx-auto mb-8">
-          Publiez vos images, gardez vos droits, et faites voir votre travail
-          bien au-delà d&apos;un fil d&apos;actualité. Retrait possible à tout moment.
-        </p>
-        <Link
-          href="/submit"
-          className="inline-block px-8 py-3 bg-emerald-700 text-white rounded-full font-bold hover:bg-emerald-800 transition-colors shadow-xl shadow-emerald-700/20"
-        >
-          Publier une image
-        </Link>
+      <section className="border-t border-gray-200 dark:border-zinc-800 mt-16">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-5 py-16 md:py-20 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="max-w-xl">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-zinc-100">
+              Vous photographiez ? Cette banque est la vôtre.
+            </h2>
+            <p className="mt-3 text-gray-500 dark:text-zinc-400">
+              Publiez vos images, gardez vos droits, et faites voir votre travail
+              bien au-delà d&apos;un fil d&apos;actualité. Retrait possible à tout moment.
+            </p>
+          </div>
+          <Link href="/submit" className="btn btn-primary btn-lg self-start md:self-auto shrink-0">
+            Publier une image
+          </Link>
+        </div>
       </section>
     </main>
   );

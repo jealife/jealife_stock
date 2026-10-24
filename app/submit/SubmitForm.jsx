@@ -1195,7 +1195,7 @@ export default function SubmitForm() {
                 {step === 1 ? (
                     <div className="max-w-3xl mx-auto">
                         <div className="text-center mb-12">
-                            <h1 className="text-4xl font-extrabold text-gray-900 dark:text-zinc-100 mb-4">
+                            <h1 className="text-4xl font-bold text-gray-900 dark:text-zinc-100 mb-4">
                                 Contribuez à JEaLiFe Stock
                             </h1>
                             <p className="text-lg text-gray-500 dark:text-zinc-400">
@@ -1294,7 +1294,7 @@ export default function SubmitForm() {
                             <PartyPopper className="w-10 h-10 text-green-600 dark:text-green-400" />
                         </div>
 
-                        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-zinc-100 mb-6">
+                        <h1 className="text-4xl font-bold text-gray-900 dark:text-zinc-100 mb-6">
                             Merci pour votre contribution
                         </h1>
 
@@ -1383,7 +1383,7 @@ export default function SubmitForm() {
                                             `/photos/${publishedItems[0].published.id}-${publishedItems[0].published.slug}`
                                         )
                                     }
-                                    className="px-6 py-4 bg-black dark:bg-white text-white dark:text-black font-bold rounded-2xl hover:bg-gray-800 dark:hover:bg-zinc-200 transition-all shadow-xl hover:shadow-2xl active:scale-95 flex items-center justify-center gap-2"
+                                    className="btn btn-primary btn-lg"
                                 >
                                     {anyPending ? "Voir mon envoi" : "Voir la photo publiée"} <ArrowRight className="w-4 h-4" />
                                 </button>
@@ -1486,7 +1486,7 @@ export default function SubmitForm() {
                             <button
                                 type="submit"
                                 disabled={publishing || pendingCount === 0 || items.some((item) => item.processing)}
-                                className="flex-1 py-4 px-6 bg-black dark:bg-white text-white dark:text-black font-bold rounded-2xl hover:bg-gray-800 dark:hover:bg-zinc-200 transition-all shadow-xl hover:shadow-2xl active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
+                                className="btn btn-primary btn-lg flex-1"
                             >
                                 {publishing ? (
                                     <>

@@ -96,7 +96,7 @@ export default function UserProfileLayout({ children }) {
         <div className="min-h-screen bg-white dark:bg-zinc-950">
 
             {/* 1. Header Area - Unsplash Style */}
-            <div className="max-w-[1320px] mx-auto px-4 sm:px-6 pt-12 pb-8 md:pt-20 md:pb-16">
+            <div className="max-w-[1320px] mx-auto px-4 sm:px-5 pt-12 pb-8 md:pt-20 md:pb-16">
                 <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-12">
 
                     {/* Avatar */}
@@ -164,7 +164,7 @@ export default function UserProfileLayout({ children }) {
                                             <>
                                                 <div className="fixed inset-0 z-40" onClick={() => setShowConnect(false)} />
                                                 <div className="absolute left-0 top-full mt-2 w-56 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-xl rounded-md overflow-hidden z-50 py-1 text-left">
-                                                    <div className="px-4 py-2 text-[11px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider bg-gray-50/50 dark:bg-zinc-800/50">
+                                                    <div className="px-4 pt-2.5 pb-2 text-xs font-medium text-gray-500 dark:text-zinc-400">
                                                         Connectez-vous avec {(profileUser.full_name || profileUser.username).split(' ')[0]}
                                                     </div>
                                                     {profileUser.email && (
@@ -219,7 +219,7 @@ export default function UserProfileLayout({ children }) {
 
             {/* 2. Navigation Tabs */}
             <div className="sticky top-16 z-30 bg-white dark:bg-zinc-950 border-b border-gray-200 dark:border-zinc-800">
-                <div className="max-w-[1320px] mx-auto px-4 sm:px-6">
+                <div className="max-w-[1320px] mx-auto px-4 sm:px-5">
                     <div className="flex gap-8 overflow-x-auto scrollbar-hide">
                         {tabs.map(tab => {
                             const isActive = currentTabId === tab.id;
@@ -242,7 +242,7 @@ export default function UserProfileLayout({ children }) {
             </div>
 
             {/* 3. Page Content */}
-            <div className="max-w-[1320px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+            <div className="max-w-[1320px] mx-auto px-4 sm:px-5 py-6 md:py-8">
                 {children}
             </div>
         </div>

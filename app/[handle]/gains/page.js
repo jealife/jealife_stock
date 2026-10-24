@@ -64,7 +64,7 @@ export default function UserGainsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 bg-white dark:bg-zinc-900">
                     <span className="text-sm font-bold text-gray-900 dark:text-zinc-100">Solde en attente</span>
-                    <p className="text-2xl font-extrabold text-gray-900 dark:text-zinc-100 mt-1 tabular-nums">
+                    <p className="text-2xl font-bold text-gray-900 dark:text-zinc-100 mt-1 tabular-nums">
                         {Number(earnings.balance || 0).toLocaleString('fr-FR')} FCFA
                     </p>
                     <p className="text-sm text-gray-400 dark:text-zinc-500 mt-3">

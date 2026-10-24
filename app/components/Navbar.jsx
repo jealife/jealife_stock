@@ -207,39 +207,39 @@ export default function Navbar() {
                 <SearchTermSync onChange={setTerm} />
             </Suspense>
             {/* Desktop Navigation Rail (Unsplash Style) */}
-            <div className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-[64px] z-[60] bg-white dark:bg-zinc-900 border-r border-gray-100 dark:border-zinc-800 items-center py-4">
+            <div className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-[64px] z-[60] bg-white dark:bg-zinc-950 border-r border-gray-200 dark:border-zinc-800 items-center py-4">
                 {/* Logo */}
                 <Link href="/" className="mb-10 px-2">
                     <img
                         src="/JEaLiFe-Stock-Logo-transparent-noir.png"
                         alt="Logo"
-                        className="w-auto h-8 object-contain hover:scale-105 transition-transform dark:invert"
+                        className="w-auto h-8 object-contain dark:invert"
                     />
                 </Link>
 
                 {/* Main Nav Icons */}
-                <div className="flex flex-col gap-6 w-full items-center">
-                    <Link href="/" title="Photos" aria-label="Photos" className={`p-2 rounded-lg transition-colors ${pathname === '/' ? 'text-black dark:text-white' : 'text-gray-400 hover:text-black hover:bg-gray-50 dark:text-zinc-500 dark:hover:text-white dark:hover:bg-zinc-800'}`}>
-                        <ImageIcon size={24} />
+                <div className="flex flex-col gap-3 w-full items-center">
+                    <Link href="/" title="Photos" aria-label="Photos" className={`p-2.5 rounded-md transition-colors ${pathname === '/' ? 'text-gray-900 bg-gray-100 dark:text-white dark:bg-zinc-800' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800'}`}>
+                        <ImageIcon size={22} />
                     </Link>
-                    <Link href="/illustrations" title="Illustrations" aria-label="Illustrations" className={`p-2 rounded-lg transition-colors ${pathname === '/illustrations' ? 'text-black dark:text-white' : 'text-gray-400 hover:text-black hover:bg-gray-50 dark:text-zinc-500 dark:hover:text-white dark:hover:bg-zinc-800'}`}>
-                        <PenTool size={24} />
+                    <Link href="/illustrations" title="Illustrations" aria-label="Illustrations" className={`p-2.5 rounded-md transition-colors ${pathname === '/illustrations' ? 'text-gray-900 bg-gray-100 dark:text-white dark:bg-zinc-800' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800'}`}>
+                        <PenTool size={22} />
                     </Link>
-                    <Link href="/videos" title="Vidéos" aria-label="Vidéos" className={`p-2 rounded-lg transition-colors ${pathname === '/videos' ? 'text-black dark:text-white' : 'text-gray-400 hover:text-black hover:bg-gray-50 dark:text-zinc-500 dark:hover:text-white dark:hover:bg-zinc-800'}`}>
-                        <Video size={24} />
+                    <Link href="/videos" title="Vidéos" aria-label="Vidéos" className={`p-2.5 rounded-md transition-colors ${pathname === '/videos' ? 'text-gray-900 bg-gray-100 dark:text-white dark:bg-zinc-800' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800'}`}>
+                        <Video size={22} />
                     </Link>
-                    <Link href="/collections" title="Collections" aria-label="Collections" className={`p-2 rounded-lg transition-colors ${pathname.startsWith('/collections') ? 'text-black dark:text-white' : 'text-gray-400 hover:text-black hover:bg-gray-50 dark:text-zinc-500 dark:hover:text-white dark:hover:bg-zinc-800'}`}>
-                        <LayoutGrid size={24} />
+                    <Link href="/collections" title="Collections" aria-label="Collections" className={`p-2.5 rounded-md transition-colors ${pathname.startsWith('/collections') ? 'text-gray-900 bg-gray-100 dark:text-white dark:bg-zinc-800' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800'}`}>
+                        <LayoutGrid size={22} />
                     </Link>
 
-                    <div className="w-8 h-px bg-gray-100 dark:bg-zinc-800"></div>
+                    <div className="w-8 h-px bg-gray-200 dark:bg-zinc-800 mt-2"></div>
                 </div>
 
                 {/* Spacer */}
                 <div className="flex-1"></div>
 
                 {/* Bottom Icons */}
-                <div className="flex flex-col gap-6 w-full items-center mb-2">
+                <div className="flex flex-col gap-3 w-full items-center mb-2">
                     <NotificationBell iconSize={22} panelClassName="absolute left-16 bottom-0 w-80 max-w-[90vw]" />
 
                     {/* Profile/Login Icon with Avatar */}
@@ -260,7 +260,7 @@ export default function Navbar() {
 
                             {/* User Dropdown Menu */}
                             {userMenuOpen && (
-                                <div className="absolute left-16 bottom-0 bg-white dark:bg-zinc-900 rounded-xl shadow-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden z-70 animate-in fade-in zoom-in-95 duration-200 origin-bottom-left">
+                                <div className="absolute left-16 bottom-0 bg-white dark:bg-zinc-900 rounded-lg shadow-xl border border-gray-200 dark:border-zinc-800 overflow-hidden z-70 animate-in fade-in zoom-in-95 duration-200 origin-bottom-left">
                                     <UserMenu
                                         user={user}
                                         onSignOut={handleSignOut}
@@ -270,8 +270,8 @@ export default function Navbar() {
                             )}
                         </div>
                     ) : (
-                        <Link href="/login" title="Connexion" aria-label="Connexion" className="p-2 rounded-lg text-gray-400 hover:text-black hover:bg-gray-50 dark:text-zinc-500 dark:hover:text-white dark:hover:bg-zinc-800 transition-colors">
-                            <UserIcon size={24} />
+                        <Link href="/login" title="Connexion" aria-label="Connexion" className="p-2.5 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800 transition-colors">
+                            <UserIcon size={22} />
                         </Link>
                     )}
 
@@ -279,18 +279,18 @@ export default function Navbar() {
 
                     <button
                         onClick={() => setDesktopSidebarOpen(true)}
-                        className="p-2 rounded-lg text-gray-400 hover:text-black hover:bg-gray-50 dark:text-zinc-500 dark:hover:text-white dark:hover:bg-zinc-800 transition-colors"
+                        className="p-2.5 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800 transition-colors"
                         title="Menu"
                         aria-label="Menu"
                     >
-                        <Menu size={24} />
+                        <Menu size={22} />
                     </button>
                 </div>
             </div>
 
             {/* Floating Navbar Container */}
-            <nav className={`sticky top-0 z-50 transition-all duration-300 md:ml-[64px] ${scrolled ? 'bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-zinc-800' : 'bg-white dark:bg-zinc-900 border-b border-transparent'}`}>
-                <div className="max-w-[1800px] mx-auto px-4 sm:px-6">
+            <nav className={`sticky top-0 z-50 transition-all duration-300 md:ml-[64px] bg-white dark:bg-zinc-950 border-b ${scrolled ? 'border-gray-200 dark:border-zinc-800' : 'border-transparent'}`}>
+                <div className="max-w-[1800px] mx-auto px-4 sm:px-5">
                     <div className="h-16 flex items-center justify-between gap-4">
 
                         {/* Left: Brand (Mobile Only) */}
@@ -305,8 +305,8 @@ export default function Navbar() {
                         </div>
 
                         {/* Search Bar - Desktop Only (Hidden on mobile top bar) */}
-                        <div className={`hidden md:block flex-1 max-w-2xl transition-all duration-300 ${isSearchFocused ? 'scale-[1.01]' : ''}`}>
-                            <div className={`relative flex items-center bg-gray-100 dark:bg-zinc-800 rounded-full transition-all duration-300 ${isSearchFocused ? 'ring-2 ring-black/5 dark:ring-white/10 bg-white dark:bg-zinc-800 shadow-lg' : 'hover:bg-gray-200/70 dark:hover:bg-zinc-700/70'}`}>
+                        <div className="hidden md:block flex-1 max-w-2xl">
+                            <div className={`relative flex items-center bg-gray-100 dark:bg-zinc-800 rounded-full transition-all duration-300 ${isSearchFocused ? 'bg-white dark:bg-zinc-900 ring-1 ring-gray-300 dark:ring-zinc-600' : 'hover:bg-gray-200/70 dark:hover:bg-zinc-700/70'}`}>
                                 <SearchDropdown currentType={currentType} setTypeMenuOpen={setTypeMenuOpen} typeMenuOpen={typeMenuOpen} ImageIconSizeIcon={ImageIconSizeIcon} PaletteSizeIcon={PaletteSizeIcon} VideoSizeIcon={VideoSizeIcon} />
                                 <input
                                     type="search"
@@ -330,21 +330,15 @@ export default function Navbar() {
                         </div>
 
                         {/* Desktop Actions */}
-                        <div className="hidden md:flex items-center gap-1 shrink-0">
-                            {user ? (
-                                <Link href="/submit" className="bg-black dark:bg-white text-white dark:text-black text-sm font-medium px-5 py-2.5 rounded-full hover:bg-gray-800 dark:hover:bg-zinc-200 active:scale-95 transition-all shadow-md hover:shadow-lg ml-2">
-                                    Soumettre
+                        <div className="hidden md:flex items-center gap-2 shrink-0">
+                            {!user && (
+                                <Link href="/login" className="btn btn-ghost">
+                                    Connexion
                                 </Link>
-                            ) : (
-                                <>
-                                    <Link href="/login" className="text-sm font-medium text-gray-500 hover:text-black px-4 py-2 rounded-full hover:bg-gray-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800 transition-all">
-                                        Connexion
-                                    </Link>
-                                    <Link href="/submit" className="bg-black dark:bg-white text-white dark:text-black text-sm font-medium px-5 py-2.5 rounded-full hover:bg-gray-800 dark:hover:bg-zinc-200 active:scale-95 transition-all shadow-md hover:shadow-lg ml-2">
-                                        Soumettre
-                                    </Link>
-                                </>
                             )}
+                            <Link href="/submit" className="btn btn-secondary">
+                                Soumettre une image
+                            </Link>
                         </div>
 
                         {/* Mobile Right - Profile Avatar/Icon + Menu Toggle */}
@@ -361,7 +355,7 @@ export default function Navbar() {
                                         />
                                     </button>
                                     {userMenuOpen && (
-                                        <div className="absolute right-0 top-12 bg-white dark:bg-zinc-900 rounded-xl shadow-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden z-70 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                                        <div className="absolute right-0 top-12 bg-white dark:bg-zinc-900 rounded-lg shadow-xl border border-gray-200 dark:border-zinc-800 overflow-hidden z-70 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                                             <UserMenu user={user} onSignOut={handleSignOut} onClose={() => setUserMenuOpen(false)} />
                                         </div>
                                     )}
@@ -385,7 +379,7 @@ export default function Navbar() {
                         insuffisant). Repliée au scroll, le nav rejoint la même
                         hauteur que sur bureau dès que ça compte réellement. */}
                     <div className={`md:hidden overflow-hidden transition-all duration-300 ${scrolled ? 'max-h-0 opacity-0' : 'max-h-20 opacity-100 pb-4'}`}>
-                        <div className={`relative flex items-center bg-gray-100 dark:bg-zinc-800 rounded-full transition-all duration-300 ${isSearchFocused ? 'ring-2 ring-black/5 dark:ring-white/10 bg-white dark:bg-zinc-800 shadow-md' : ''}`}>
+                        <div className={`relative flex items-center bg-gray-100 dark:bg-zinc-800 rounded-full transition-colors ${isSearchFocused ? 'bg-white dark:bg-zinc-900 ring-1 ring-gray-300 dark:ring-zinc-600' : ''}`}>
                             <button
                                 type="button"
                                 onClick={submitSearch}
@@ -419,7 +413,7 @@ export default function Navbar() {
 
 
                         {/* Floating Menu Card mimicking Unsplash */}
-                        <div className="absolute top-[70px] right-4 left-4 z-[60] bg-white dark:bg-zinc-900 rounded-xl shadow-2xl border border-gray-100 dark:border-zinc-800 p-4 animate-in slide-in-from-top-2 duration-200 origin-top">
+                        <div className="absolute top-[70px] right-4 left-4 z-[60] bg-white dark:bg-zinc-900 rounded-lg shadow-xl border border-gray-200 dark:border-zinc-800 p-4 animate-in slide-in-from-top-2 duration-200 origin-top">
                             <div className="flex flex-col mb-4">
                                 {/* Même source que le menu bureau : les deux
                                     listes ont cessé de diverger. */}

@@ -27,21 +27,28 @@ export default function DownloadButton({ media, variant = "compact", onDownloade
     if (media?.isPremium) {
         return variant === "primary"
             ? <PremiumDownload media={media} onDownloaded={onDownloaded} />
-            : <PremiumCompactLink media={media} />;
+            : <PremiumCompactLink media={media} variant={variant} />;
     }
     return <FreeDownloadButton media={media} variant={variant} onDownloaded={onDownloaded} />;
 }
 
-function PremiumCompactLink({ media }) {
+const OUTLINE_BUTTON =
+    "inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-transparent text-sm font-medium text-gray-700 dark:text-zinc-300 hover:text-gray-900 hover:border-gray-900 dark:hover:text-white dark:hover:border-zinc-400 transition-colors disabled:opacity-60";
+
+const PRIMARY_BUTTON =
+    "h-9 bg-gray-900 text-white dark:bg-white dark:text-black hover:bg-black dark:hover:bg-gray-200 font-medium text-[13px] transition-colors flex items-center gap-2 disabled:opacity-70";
+
+function PremiumCompactLink({ media, variant }) {
     return (
         <Link
             href={mediaUrl(media)}
             onClick={(event) => event.stopPropagation()}
             title="Contenu Premium : voir la fiche pour le débloquer"
             aria-label="Contenu Premium : voir la fiche pour le débloquer"
-            className="bg-white hover:bg-gray-100 text-amber-600 p-2.5 rounded-full transition-all shadow-lg active:scale-95 flex items-center justify-center"
+            className={variant === "outline" ? OUTLINE_BUTTON : "btn-overlay text-amber-600 hover:text-amber-700"}
         >
-            <Lock className="w-4 h-4" />
+            <Lock className={`w-4 h-4 ${variant === "outline" ? "text-amber-600" : ""}`} />
+            {variant === "outline" && <span>Premium</span>}
         </Link>
     );
 }
@@ -136,7 +143,7 @@ function PremiumDownload({ media, onDownloaded }) {
                 <button
                     onClick={downloadOwnMedia}
                     disabled={busy}
-                    className="h-9 px-3 sm:px-4 bg-green-600 text-white rounded-md font-medium text-[13px] hover:bg-green-700 transition-all shadow-sm flex items-center gap-2 disabled:opacity-70"
+                    className={`${PRIMARY_BUTTON} rounded-md px-3 sm:px-4`}
                 >
                     {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                     <span className="hidden sm:inline">Télécharger votre média</span>
@@ -173,9 +180,9 @@ function PremiumDownload({ media, onDownloaded }) {
             <button
                 onClick={purchase}
                 disabled={busy}
-                className="h-9 px-3 sm:px-4 bg-amber-500 text-white rounded-md font-medium text-[13px] hover:bg-amber-600 transition-all shadow-sm flex items-center gap-2 disabled:opacity-70"
+                className={`${PRIMARY_BUTTON} rounded-md px-3 sm:px-4`}
             >
-                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4 text-amber-400 dark:text-amber-600" />}
                 {settings.creditsCost
                     ? `Télécharger (${settings.creditsCost} crédit${settings.creditsCost > 1 ? "s" : ""})`
                     : "Télécharger"}
@@ -233,8 +240,8 @@ function FreeDownloadButton({ media, variant = "compact", onDownloaded }) {
     };
 
     const menu = (
-        <div className="absolute right-0 bottom-full mb-2 w-60 bg-white dark:bg-zinc-900 rounded-xl shadow-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
-            <p className="px-4 pt-3 pb-2 text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">
+        <div className="absolute right-0 bottom-full mb-2 w-60 bg-white dark:bg-zinc-900 rounded-lg shadow-xl border border-gray-200 dark:border-zinc-800 overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-1 duration-150">
+            <p className="px-4 pt-3 pb-2 text-xs font-medium text-gray-500 dark:text-zinc-400">
                 Choisir la taille
             </p>
             {options.map((option) => (
@@ -246,14 +253,28 @@ function FreeDownloadButton({ media, variant = "compact", onDownloaded }) {
                     <span>
                         <span className="block text-sm font-medium text-gray-900 dark:text-zinc-100">{option.label}</span>
                         {option.hint && (
-                            <span className="block text-[10px] text-gray-400 dark:text-zinc-500">{option.hint}</span>
+                            <span className="block text-xs text-gray-500 dark:text-zinc-400">{option.hint}</span>
                         )}
                     </span>
-                    <ChevronRight className="w-3.5 h-3.5 text-gray-300 dark:text-zinc-600 group-hover/item:text-gray-900 dark:group-hover/item:text-zinc-100 transition-colors" />
+                    <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-zinc-600 group-hover/item:text-gray-900 dark:group-hover/item:text-zinc-100 transition-colors" />
                 </button>
             ))}
         </div>
     );
+
+    // Ligne d'actions des cartes sur mobile : un appui télécharge
+    // directement, sans menu de tailles à viser du pouce.
+    if (variant === "outline") {
+        return (
+            <div className="relative">
+                <button onClick={() => run(quickKey)} disabled={busy} className={OUTLINE_BUTTON}>
+                    {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                    Télécharger
+                </button>
+                {error && <span className="absolute right-0 top-full mt-1 whitespace-nowrap text-xs text-red-600 dark:text-red-400">{error}</span>}
+            </div>
+        );
+    }
 
     if (variant === "primary") {
         return (
@@ -261,7 +282,7 @@ function FreeDownloadButton({ media, variant = "compact", onDownloaded }) {
                 <button
                     onClick={() => run(quickKey)}
                     disabled={busy}
-                    className="h-9 px-3 sm:px-4 bg-green-600 text-white rounded-l-md font-medium text-[13px] hover:bg-green-700 transition-all shadow-sm flex items-center gap-2 disabled:opacity-70"
+                    className={`${PRIMARY_BUTTON} rounded-l-md px-3 sm:px-4`}
                 >
                     {busy ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -276,10 +297,10 @@ function FreeDownloadButton({ media, variant = "compact", onDownloaded }) {
                         </>
                     )}
                 </button>
-                <div className="h-9 w-px bg-green-700/30" />
+                <div className="h-9 w-px bg-white/20 dark:bg-black/15" />
                 <button
                     onClick={() => setOpen(!open)}
-                    className="h-9 px-2 bg-green-600 text-white rounded-r-md hover:bg-green-700 transition-all shadow-sm flex items-center"
+                    className={`${PRIMARY_BUTTON} rounded-r-md px-2`}
                     aria-label="Choisir une taille de téléchargement"
                     aria-expanded={open}
                 >
@@ -287,26 +308,26 @@ function FreeDownloadButton({ media, variant = "compact", onDownloaded }) {
                 </button>
 
                 {open && (
-                    <div className="absolute right-0 top-12 w-64 bg-white dark:bg-zinc-900 rounded-xl shadow-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-                        <div className="p-2">
+                    <div className="absolute right-0 top-11 w-64 bg-white dark:bg-zinc-900 rounded-lg shadow-xl border border-gray-200 dark:border-zinc-800 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150 origin-top-right">
+                        <div className="p-1.5">
                             {options.map((option) => (
                                 <button
                                     key={option.key}
                                     onClick={() => run(option.key)}
-                                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-800 rounded-lg transition-colors group"
+                                    className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-md transition-colors group"
                                 >
                                     <span className="text-left">
-                                        <span className="block text-sm font-semibold text-gray-900 dark:text-zinc-100">{option.label}</span>
+                                        <span className="block text-sm font-medium text-gray-900 dark:text-zinc-100">{option.label}</span>
                                         {option.hint && (
-                                            <span className="block text-[10px] text-gray-400 dark:text-zinc-500">{option.hint}</span>
+                                            <span className="block text-xs text-gray-500 dark:text-zinc-400">{option.hint}</span>
                                         )}
                                     </span>
-                                    <Download className="w-4 h-4 text-gray-300 dark:text-zinc-600 group-hover:text-green-600 transition-colors" />
+                                    <Download className="w-4 h-4 text-gray-400 dark:text-zinc-500 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />
                                 </button>
                             ))}
                         </div>
-                        <p className="p-4 bg-gray-50 dark:bg-zinc-800 border-t border-gray-100 dark:border-zinc-700 text-[10px] text-gray-400 dark:text-zinc-500 leading-tight">
-                            Toutes les images de JEaLiFe Stock sont gratuites, sous licence libre.
+                        <p className="px-4 py-3 bg-gray-50 dark:bg-zinc-800/60 border-t border-gray-200 dark:border-zinc-800 text-xs text-gray-500 dark:text-zinc-400 leading-snug">
+                            Gratuit, sous <Link href="/licence" className="underline underline-offset-2 hover:text-gray-900 dark:hover:text-white">Licence JEaLiFe</Link>.
                         </p>
                     </div>
                 )}
@@ -321,9 +342,7 @@ function FreeDownloadButton({ media, variant = "compact", onDownloaded }) {
             <button
                 onClick={() => setOpen(!open)}
                 disabled={busy}
-                className={`bg-white hover:bg-gray-100 text-gray-900 p-2.5 rounded-full transition-all shadow-lg active:scale-95 flex items-center justify-center ${
-                    open ? "ring-4 ring-black/10" : ""
-                }`}
+                className={`btn-overlay ${open ? "bg-white text-gray-900" : ""}`}
                 aria-label="Télécharger"
                 aria-expanded={open}
             >

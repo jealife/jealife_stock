@@ -56,7 +56,7 @@ export default function PressPage() {
                             <a
                                 href="/JEaLiFe-Stock-Logo-transparent-noir.png"
                                 download
-                                className="flex items-center gap-2 bg-black text-white px-5 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors text-sm"
+                                className="btn btn-primary btn-lg"
                             >
                                 <Download className="w-4 h-4" /> Logo noir (.png)
                             </a>

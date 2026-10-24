@@ -81,7 +81,7 @@ export default async function sitemap() {
         // remplit tout seul à chaque publication (chaque tag saisi y crée une
         // ligne), et ces pages `/themes/<slug>` partaient à l'indexation sans
         // que personne ne les ait décidées. Aucune surface de navigation ne
-        // les affiche — TopicBar, FeaturedTopics et /themes filtrent tous sur
+        // les affiche — TopicBar et /themes filtrent tous deux sur
         // `kind = 'category'` —, seul le sitemap les exposait encore.
         safeQuery(() =>
             supabase

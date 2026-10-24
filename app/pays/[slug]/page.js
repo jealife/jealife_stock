@@ -42,11 +42,11 @@ export default async function CountryPage({ params }) {
 
     return (
         <main className="min-h-screen bg-white dark:bg-zinc-950">
-            <header className="max-w-[1600px] mx-auto px-4 pt-12 pb-6">
+            <header className="max-w-[1320px] mx-auto px-4 sm:px-5 pt-12 pb-6">
                 <Link href="/pays" className="text-sm font-medium text-gray-400 dark:text-zinc-500 hover:text-black dark:hover:text-white transition-colors">
                     ← Tous les pays
                 </Link>
-                <h1 className="text-4xl font-extrabold text-gray-900 dark:text-zinc-100 mt-4">
+                <h1 className="text-3xl md:text-[40px] leading-tight font-bold tracking-tight text-gray-900 dark:text-zinc-100 mt-4">
                     {country.name_fr}
                 </h1>
                 <p className="text-gray-500 dark:text-zinc-400 mt-2">

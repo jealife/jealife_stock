@@ -64,7 +64,7 @@ export default function CollectionDetail() {
                 <p className="text-gray-500 dark:text-zinc-400 mb-8 max-w-sm">
                     Elle a peut-être été supprimée, ou son auteur l&apos;a rendue privée.
                 </p>
-                <Link href="/" className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold hover:bg-gray-800 dark:hover:bg-zinc-200 transition-colors">
+                <Link href="/" className="btn btn-primary btn-lg">
                     Retour à l&apos;accueil
                 </Link>
             </div>
@@ -76,8 +76,8 @@ export default function CollectionDetail() {
 
     return (
         <main className="min-h-screen bg-white dark:bg-zinc-950">
-            <header className="max-w-[1600px] mx-auto px-4 pt-12 pb-6">
-                <h1 className="text-4xl font-extrabold text-gray-900 dark:text-zinc-100 flex items-center gap-3">
+            <header className="max-w-[1320px] mx-auto px-4 sm:px-5 pt-12 pb-6">
+                <h1 className="text-3xl md:text-[40px] leading-tight font-bold tracking-tight text-gray-900 dark:text-zinc-100 flex items-center gap-3">
                     {collection.title}
                     {collection.is_private && (
                         <Lock className="w-6 h-6 text-gray-400 dark:text-zinc-500" aria-label="Collection privée" />
@@ -121,13 +121,13 @@ export default function CollectionDetail() {
                 </div>
             </header>
 
-            <div className="max-w-[1600px] mx-auto px-4 pb-16">
+            <div className="max-w-[1320px] mx-auto px-4 sm:px-5 pb-16">
                 {items.length === 0 ? (
                     <p className="py-24 text-center text-gray-500 dark:text-zinc-400">
                         Cette collection est encore vide.
                     </p>
                 ) : (
-                    <div className="columns-1 sm:columns-2 lg:columns-3 gap-3 sm:gap-6">
+                    <div className="columns-1 sm:columns-2 lg:columns-3 gap-3 sm:gap-6 *:mb-10 sm:*:mb-6">
                         {items.map((item) =>
                             item.type === "video" ? (
                                 // VideoCard n'a pas ces classes par défaut : dans

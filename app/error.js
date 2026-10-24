@@ -30,7 +30,7 @@ export default function GlobalError({ error, reset }) {
             <div className="flex flex-wrap gap-3 justify-center">
                 <button
                     onClick={reset}
-                    className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold hover:bg-gray-800 dark:hover:bg-zinc-200 transition-colors"
+                    className="btn btn-primary btn-lg"
                 >
                     Réessayer
                 </button>

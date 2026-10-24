@@ -18,7 +18,7 @@ import {
  * fonction qui transforme une galerie en outil de travail — un journaliste ou
  * un graphiste gabonais a besoin de mettre de côté ce qu'il repère.
  */
-export default function SaveToCollectionButton({ mediaId, variant = "overlay", className = "" }) {
+export default function SaveToCollectionButton({ mediaId, variant = "overlay", menuAlign = "right", className = "" }) {
     const { user } = useAuth();
     const router = useRouter();
     const [open, setOpen] = useState(false);
@@ -86,8 +86,8 @@ export default function SaveToCollectionButton({ mediaId, variant = "overlay", c
 
     const triggerClass =
         variant === "overlay"
-            ? "bg-white/20 backdrop-blur-md hover:bg-white text-white hover:text-black p-2.5 rounded-full transition-all active:scale-95 border border-white/10"
-            : "flex items-center gap-2 px-3 py-2 border border-gray-200 dark:border-zinc-700 rounded-lg text-sm font-medium text-gray-600 dark:text-zinc-400 hover:text-black hover:border-black dark:hover:text-white dark:hover:border-white transition-all";
+            ? "btn-overlay"
+            : "inline-flex items-center justify-center gap-2 h-9 px-2.5 rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-transparent text-sm font-medium text-gray-500 dark:text-zinc-400 hover:text-gray-900 hover:border-gray-900 dark:hover:text-white dark:hover:border-zinc-400 transition-colors";
 
     return (
         <div className="relative" ref={containerRef}>
@@ -97,13 +97,13 @@ export default function SaveToCollectionButton({ mediaId, variant = "overlay", c
                 aria-label="Ajouter à une collection"
                 aria-expanded={open}
             >
-                <Plus className={variant === "overlay" ? "w-5 h-5" : "w-4 h-4 shrink-0"} />
+                <Plus className="w-4 h-4 shrink-0" />
                 {variant !== "overlay" && <span className="hidden sm:inline">Collection</span>}
             </button>
 
             {open && (
-                <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-zinc-900 rounded-xl shadow-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-                    <p className="px-4 pt-3 pb-2 text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">
+                <div className={`absolute ${menuAlign === "left" ? "left-0 origin-top-left" : "right-0 origin-top-right"} top-full mt-2 w-64 max-w-[calc(100vw-2rem)] bg-white dark:bg-zinc-900 rounded-lg shadow-xl border border-gray-200 dark:border-zinc-800 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150`}>
+                    <p className="px-4 pt-3 pb-2 text-xs font-medium text-gray-500 dark:text-zinc-400">
                         Enregistrer dans
                     </p>
 
@@ -150,7 +150,7 @@ export default function SaveToCollectionButton({ mediaId, variant = "overlay", c
                             />
                             <button
                                 type="submit"
-                                className="mt-2 w-full py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg text-sm font-bold hover:bg-gray-800 dark:hover:bg-zinc-200 transition-colors"
+                                className="btn btn-primary mt-2 w-full"
                             >
                                 Créer et enregistrer
                             </button>

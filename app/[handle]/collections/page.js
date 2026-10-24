@@ -72,7 +72,7 @@ export default function UserCollectionsPage() {
                         {collection.preview_photos.length > 0 ? (
                             <>
                                 <div className="col-span-2 relative h-full">
-                                    <Image
+                                    <Image unoptimized
                                         src={collection.preview_photos[0]}
                                         alt=""
                                         fill
@@ -84,7 +84,7 @@ export default function UserCollectionsPage() {
                                     {[1, 2].map((index) => (
                                         <div key={index} className="relative h-full bg-gray-100 dark:bg-zinc-800">
                                             {collection.preview_photos[index] && (
-                                                <Image
+                                                <Image unoptimized
                                                     src={collection.preview_photos[index]}
                                                     alt=""
                                                     fill

@@ -69,7 +69,10 @@ export const metadata = {
 // `themeColor` et `viewport` déclarés dans `metadata` sont ignorés depuis
 // Next 15 — ils déclenchaient un avertissement sur chaque page du site.
 export const viewport = {
-  themeColor: "#0b3d2e",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
   width: "device-width",
   initialScale: 1,
   // "light dark" (pas juste "light") : laisse la propriété CSS `color-scheme`

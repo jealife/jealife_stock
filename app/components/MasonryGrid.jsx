@@ -103,7 +103,12 @@ export default function MasonryGrid({
     emptyMessage = null,
     initialItems = null,
     includeUnpublished = false,
+    contained = true,
 }) {
+    // Grille posée dans une page qui fournit déjà sa propre marge (profil) :
+    // sans ce réglage, les deux marges s'additionnaient et décalaient la
+    // grille par rapport à l'en-tête.
+    const frame = contained ? "max-w-[1320px] mx-auto px-4 sm:px-5" : "";
     const searchParams = useSearchParams();
     const { user } = useAuth();
 
@@ -285,7 +290,7 @@ export default function MasonryGrid({
 
     if (loading) {
         return (
-            <div className="max-w-[1600px] mx-auto px-4 py-8">
+            <div className={`${frame} py-6`}>
                 {layouts.map(({ count, className }) => {
                     const skeletonColumns = Array.from({ length: count }, () => []);
                     [...Array(12)].forEach((_, i) => skeletonColumns[i % count].push(i));
@@ -305,7 +310,7 @@ export default function MasonryGrid({
 
     if (error) {
         return (
-            <div className="max-w-[1600px] mx-auto px-4 py-20 text-center">
+            <div className={`${frame} py-20 text-center`}>
                 <p className="text-red-600 dark:text-red-400 text-lg">{error}</p>
             </div>
         );
@@ -313,7 +318,7 @@ export default function MasonryGrid({
 
     if (items.length === 0) {
         return (
-            <div className="max-w-[1600px] mx-auto px-4 py-24 text-center flex flex-col items-center">
+            <div className={`${frame} py-24 text-center flex flex-col items-center`}>
                 <div className="w-20 h-20 bg-gray-50 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-6">
                     <ImageOff className="w-8 h-8 text-gray-300 dark:text-zinc-600" />
                 </div>
@@ -335,14 +340,14 @@ export default function MasonryGrid({
     const firstRow = new Set(items.slice(0, columnCount || 3).map((item) => item.id));
 
     return (
-        <div className="max-w-[1600px] mx-auto px-4 py-8">
+        <div className={`${frame} py-6`}>
             {/* La clé de chaque disposition est son nombre de colonnes : après
                 l'hydratation, React garde tel quel le bloc déjà affiché (les
                 images ne se rechargent pas) et retire seulement les autres. */}
             {layouts.map(({ count, className }) => (
                 <div key={count} className={`${className} flex-row gap-6`}>
                     {distribute(items, count).map((columnItems, columnIndex) => (
-                        <div key={columnIndex} className="flex-1 min-w-0 flex flex-col gap-6">
+                        <div key={columnIndex} className="flex-1 min-w-0 flex flex-col gap-10 md:gap-6">
                             {columnItems.map((item) => (
                                 item.type === 'video' ? (
                                     <VideoCard
@@ -378,7 +383,7 @@ export default function MasonryGrid({
                 <div className="flex justify-center py-10">
                     <button
                         onClick={loadMore}
-                        className="px-6 py-3 border border-gray-200 dark:border-zinc-700 rounded-full text-sm font-bold text-gray-600 hover:border-black hover:text-black dark:text-zinc-400 dark:hover:border-white dark:hover:text-white transition-colors"
+                        className="btn btn-secondary btn-lg"
                     >
                         Afficher plus d&apos;images
                     </button>

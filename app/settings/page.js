@@ -453,7 +453,7 @@ export default function SettingsPage() {
                                     <button
                                         type="submit"
                                         disabled={saving}
-                                        className="w-full md:w-auto px-10 py-3 bg-black dark:bg-white text-white dark:text-black rounded-lg font-bold hover:bg-gray-800 dark:hover:bg-zinc-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm shadow-md active:scale-95"
+                                        className="btn btn-primary btn-lg w-full md:w-auto"
                                     >
                                         {saving ? (
                                             <>

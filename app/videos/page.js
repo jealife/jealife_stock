@@ -51,8 +51,8 @@ export default async function VideosPage({ searchParams }) {
                 <TopicBar />
             </Suspense>
 
-            <header className="max-w-[1600px] mx-auto px-4 pt-10 pb-4">
-                <h1 className="text-3xl font-extrabold text-gray-900 dark:text-zinc-100">
+            <header className="max-w-[1320px] mx-auto px-4 sm:px-5 pt-10 pb-4">
+                <h1 className="text-3xl md:text-[40px] leading-tight font-bold tracking-tight text-gray-900 dark:text-zinc-100">
                     {query ? `Vidéos « ${query} »` : "Vidéos"}
                 </h1>
                 <p className="text-gray-500 dark:text-zinc-400 mt-2">
