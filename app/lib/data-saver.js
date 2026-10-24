@@ -42,10 +42,17 @@ export function setDataSaverPreference(value) {
     window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 
+// Lu une seule fois par session : `effectiveType` est une estimation que le
+// navigateur révise sans cesse (4g, 3g, 4g…). La suivre en direct faisait
+// basculer la fiche photo entre la vignette et la haute définition, et
+// apparaître puis disparaître le bouton « Afficher en haute définition ».
+let constrainedAtStart = null;
+
 function connectionIsConstrained() {
+    if (constrainedAtStart !== null) return constrainedAtStart;
     const connection = typeof navigator !== "undefined" ? navigator.connection : null;
-    if (!connection) return false;
-    return !!connection.saveData || ["slow-2g", "2g", "3g"].includes(connection.effectiveType);
+    constrainedAtStart = !!connection && (!!connection.saveData || ["slow-2g", "2g", "3g"].includes(connection.effectiveType));
+    return constrainedAtStart;
 }
 
 function isDataSaverOn() {
@@ -58,12 +65,9 @@ function isDataSaverOn() {
 function subscribe(callback) {
     window.addEventListener(CHANGE_EVENT, callback);
     window.addEventListener("storage", callback);
-    const connection = navigator.connection;
-    connection?.addEventListener?.("change", callback);
     return () => {
         window.removeEventListener(CHANGE_EVENT, callback);
         window.removeEventListener("storage", callback);
-        connection?.removeEventListener?.("change", callback);
     };
 }
 
