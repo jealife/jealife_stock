@@ -184,7 +184,7 @@ export default function PhotoDetail({ initialPhoto }) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-zinc-950 text-center px-4">
                 <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-zinc-100">Cette image n&apos;existe pas ou n&apos;est plus publiée.</h1>
-                <Link href="/" className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold hover:bg-gray-800 dark:hover:bg-zinc-200 transition-colors">
+                <Link href="/" className="btn btn-primary btn-lg">
                     Retour à l&apos;accueil
                 </Link>
             </div>
@@ -261,7 +261,7 @@ export default function PhotoDetail({ initialPhoto }) {
         <div className="min-h-screen bg-white dark:bg-zinc-950">
 
             {/* Sticky Bar */}
-            <div className="sticky top-16 z-30 bg-white dark:bg-zinc-950 px-4 h-[72px] flex items-center justify-between gap-3">
+            <div className="sticky top-16 z-30 bg-white dark:bg-zinc-950 px-4 sm:px-5 h-16 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 min-w-0">
                     {/* <button
                         onClick={() => router.back()}
@@ -283,7 +283,7 @@ export default function PhotoDetail({ initialPhoto }) {
                     </Link>
                     <div className="flex flex-col min-w-0">
                         <Link href={`/@${photo.author.username}`} className="group">
-                            <span className="font-bold text-[15px] text-gray-900 dark:text-zinc-100 truncate leading-tight group-hover:underline">{photo.author.name}</span>
+                            <span className="font-medium text-[15px] text-gray-900 dark:text-zinc-100 truncate leading-tight group-hover:underline underline-offset-2">{photo.author.name}</span>
                         </Link>
                         {/* Menu "Connectez-vous avec" */}
                         <div className="relative">
@@ -291,7 +291,7 @@ export default function PhotoDetail({ initialPhoto }) {
                                 onClick={(e) => { e.preventDefault(); setShowConnect(!showConnect); }}
                                 aria-expanded={showConnect}
                                 title="Contacter le photographe"
-                                className="flex text-[13px] text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 font-medium truncate items-center gap-1 transition-colors"
+                                className="flex text-[13px] text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate items-center gap-1 transition-colors"
                             >
                                
                                 {photo.author.isAvailableForHire ? "Disponible" : "Contacter"}
@@ -302,7 +302,7 @@ export default function PhotoDetail({ initialPhoto }) {
                                 <>
                                     <div className="fixed inset-0 z-40" onClick={() => setShowConnect(false)} />
                                     <div className="absolute left-0 top-full mt-2 w-56 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-xl rounded-md overflow-hidden z-50 py-1">
-                                        <div className="px-4 py-2 text-[11px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider bg-gray-50/50 dark:bg-zinc-800/50">
+                                        <div className="px-4 pt-2.5 pb-2 text-xs font-medium text-gray-500 dark:text-zinc-400">
                                             Connectez-vous avec {photo.author.name}
                                         </div>
                                         {photo.author.email && (
@@ -338,19 +338,18 @@ export default function PhotoDetail({ initialPhoto }) {
                 </div>
 
                 <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                    <SaveToCollectionButton mediaId={photo.id} variant="outline" className="hidden sm:flex justify-center w-9 sm:w-auto h-9 sm:px-3 border-gray-300 dark:border-zinc-700 text-gray-600 dark:text-zinc-400 hover:border-gray-900 hover:text-gray-900 dark:hover:border-zinc-400 dark:hover:text-white rounded-md shadow-sm" />
-                    <LikeButton
-                        mediaId={photo.id}
-                        initialLiked={liked}
-                        initialCount={photo.likes}
-                        variant="outline"
-                        className="hidden sm:flex justify-center w-9 sm:w-auto h-9 sm:px-3 border-gray-300 dark:border-zinc-700 text-gray-600 dark:text-zinc-400 hover:border-gray-900 hover:text-gray-900 dark:hover:border-zinc-400 dark:hover:text-white rounded-md shadow-sm"
-                    />
+                    {/* Sur mobile, j'aime et collection passent sous l'image
+                        (voir la rangée des statistiques) : la barre collante
+                        garde la place pour le téléchargement. */}
+                    <div className="hidden sm:flex items-center gap-2">
+                        <LikeButton mediaId={photo.id} initialLiked={liked} initialCount={photo.likes} variant="outline" />
+                        <SaveToCollectionButton mediaId={photo.id} variant="outline" />
+                    </div>
 
                     {isOwner && (
                         <Link
                             href={`/photos/${rawId}/edit`}
-                            className="flex items-center gap-2 h-9 px-2.5 sm:px-3 border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-md text-[13px] font-medium text-gray-700 dark:text-zinc-300 hover:border-gray-900 hover:text-gray-900 dark:hover:border-zinc-400 dark:hover:text-white transition-all shadow-sm"
+                            className="btn btn-secondary px-2.5 sm:px-3"
                             title="Modifier l'image"
                         >
                             <Edit2 className="w-3.5 h-3.5 shrink-0" />
@@ -425,7 +424,7 @@ export default function PhotoDetail({ initialPhoto }) {
                                 <button
                                     type="button"
                                     onClick={() => setWantsHd(true)}
-                                    className="absolute bottom-3 right-3 z-10 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs font-semibold backdrop-blur-sm hover:bg-black/75 transition-colors"
+                                    className="absolute bottom-3 right-3 z-10 px-3 h-8 rounded-md bg-black/60 text-white text-xs font-medium hover:bg-black/75 transition-colors"
                                 >
                                     Afficher en haute définition
                                 </button>
@@ -436,11 +435,11 @@ export default function PhotoDetail({ initialPhoto }) {
             </div>
 
             {/* Image Details Section */}
-            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+            <div className="max-w-[1320px] mx-auto px-4 sm:px-5 py-6 md:py-8">
                 
                 {/* Stats & Actions Row */}
-                <div className="flex justify-between items-start mb-6 sm:mb-10">
-                    <div className="flex flex-col sm:flex-row gap-4 sm:gap-12">
+                <div className="flex flex-wrap justify-between items-start gap-4 mb-6 sm:mb-10">
+                    <div className="flex gap-8 sm:gap-12">
                         <div className="flex flex-col">
                             <span className="text-[13px] text-gray-500 dark:text-zinc-400 font-medium mb-1">Vues</span>
                             <span className="text-[15px] font-semibold text-gray-900 dark:text-zinc-100">{formatCount(photo.views)}</span>
@@ -452,31 +451,23 @@ export default function PhotoDetail({ initialPhoto }) {
                     </div>
 
                     <div className="flex items-center gap-2 flex-wrap">
-                        <LikeButton
-                            mediaId={photo.id}
-                            initialLiked={liked}
-                            initialCount={photo.likes}
-                            variant="outline"
-                            className="flex sm:hidden items-center justify-center h-8 w-10 border border-gray-300 dark:border-zinc-700 rounded-md text-gray-600 dark:text-zinc-400 shadow-sm"
-                        />
-                        <SaveToCollectionButton
-                            mediaId={photo.id}
-                            variant="outline"
-                            className="flex sm:hidden items-center justify-center h-8 w-10 border-gray-300 dark:border-zinc-700 text-gray-600 dark:text-zinc-400 rounded-md shadow-sm"
-                        />
+                        <div className="flex sm:hidden items-center gap-2">
+                            <LikeButton mediaId={photo.id} initialLiked={liked} initialCount={photo.likes} variant="outline" />
+                            <SaveToCollectionButton mediaId={photo.id} variant="outline" />
+                        </div>
                         <button
                             onClick={share}
-                            className="flex items-center gap-2 h-8 px-3 border border-gray-300 dark:border-zinc-700 rounded-md text-[13px] font-medium text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-900 dark:hover:border-zinc-400 transition-colors shadow-sm"
+                            className="btn btn-secondary px-3"
                         >
-                            <Share2 className="w-4 h-4 text-gray-400 dark:text-zinc-500" /> <span className="hidden sm:inline">Partager</span>
+                            <Share2 className="w-4 h-4" /> <span className="hidden sm:inline">Partager</span>
                         </button>
                         <div className="relative">
                             <button
                                 onClick={() => setShowMenu(!showMenu)}
-                                className="flex items-center justify-center w-10 h-8 border border-gray-300 dark:border-zinc-700 rounded-md text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-900 dark:hover:border-zinc-400 transition-colors shadow-sm"
+                                className="btn btn-secondary px-2.5"
                                 aria-label="Plus d'options"
                             >
-                                <MoreHorizontal className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
+                                <MoreHorizontal className="w-4 h-4" />
                             </button>
 
                             {showMenu && (
@@ -498,7 +489,7 @@ export default function PhotoDetail({ initialPhoto }) {
 
                 {/* Title, Desc & Info list */}
                 <div className="max-w-4xl space-y-6">
-                    <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-zinc-100 leading-snug text-balance">
+                    <h1 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-zinc-100 leading-snug text-balance">
                         {photo.title || photo.alt}
                     </h1>
 
@@ -537,10 +528,10 @@ export default function PhotoDetail({ initialPhoto }) {
                                 </div>
 
                                 {shootingDetails.length > 0 && (
-                                    <div className="absolute left-0 bottom-full mb-2 z-30 w-max max-w-xs hidden group-hover:block group-focus-within:block bg-gray-900 dark:bg-zinc-800 text-white rounded-xl shadow-xl px-4 py-3 space-y-2.5">
+                                    <div className="absolute left-0 bottom-full mb-2 z-30 w-max max-w-xs hidden group-hover:block group-focus-within:block bg-gray-900 dark:bg-zinc-800 text-white rounded-md shadow-xl px-4 py-3 space-y-2.5">
                                         {shootingDetails.map(({ label, value }) => (
                                             <div key={label}>
-                                                <p className="text-[11px] text-gray-400 dark:text-zinc-500">{label}</p>
+                                                <p className="text-xs text-gray-400">{label}</p>
                                                 <p className="text-[13px] font-medium leading-snug">{value}</p>
                                             </div>
                                         ))}
@@ -562,7 +553,7 @@ export default function PhotoDetail({ initialPhoto }) {
                             <Link
                                 key={topic.slug}
                                 href={`/themes/${topic.slug}`}
-                                className="px-3 py-1.5 bg-[#eeeeee] dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-[#e1e1e1] dark:hover:bg-zinc-700 hover:text-gray-900 dark:hover:text-white rounded-[4px] transition-colors text-[13px] capitalize"
+                                className="px-2.5 h-8 inline-flex items-center bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-700 hover:text-gray-900 dark:hover:text-white rounded-sm transition-colors text-sm capitalize"
                             >
                                 {topic.name}
                             </Link>
@@ -573,7 +564,7 @@ export default function PhotoDetail({ initialPhoto }) {
                                 <Link
                                     key={tag}
                                     href={`/?q=${encodeURIComponent(tag.toLowerCase())}`}
-                                    className="px-3 py-1.5 bg-[#eeeeee] dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-[#e1e1e1] dark:hover:bg-zinc-700 hover:text-gray-900 dark:hover:text-white rounded-[4px] transition-colors text-[13px] capitalize"
+                                    className="px-2.5 h-8 inline-flex items-center bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-700 hover:text-gray-900 dark:hover:text-white rounded-sm transition-colors text-sm capitalize"
                                 >
                                     {tag}
                                 </Link>
@@ -665,10 +656,10 @@ export default function PhotoDetail({ initialPhoto }) {
 
             {/* Related Images */}
             {related.length > 0 && (
-                <section className="mt-10 border-t border-gray-100 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900/50">
-                    <div className="max-w-[1600px] mx-auto px-4 md:px-8 py-16">
-                        <h2 className="text-2xl font-black text-gray-900 dark:text-zinc-100 mb-8">Images similaires</h2>
-                        <div className="columns-2 lg:columns-3 gap-3 sm:gap-6">
+                <section className="mt-10 border-t border-gray-200 dark:border-zinc-800">
+                    <div className="max-w-[1320px] mx-auto px-4 sm:px-5 py-12 md:py-16">
+                        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-zinc-100 mb-6 md:mb-8">Images similaires</h2>
+                        <div className="columns-2 lg:columns-3 gap-3 sm:gap-6 *:mb-3 sm:*:mb-6">
                             {related.map((item) => (
                                 <PhotoCard key={item.id} photo={item} hideActions />
                             ))}
@@ -765,7 +756,7 @@ function ShareModal({ photo, copied, onCopy, onClose }) {
                 onClick={(event) => event.stopPropagation()}
             >
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-black text-gray-900 dark:text-zinc-100">Partager</h2>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-zinc-100">Partager</h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-gray-600 dark:text-zinc-400" aria-label="Fermer">
                         <X className="w-5 h-5" />
                     </button>
@@ -785,7 +776,7 @@ function ShareModal({ photo, copied, onCopy, onClose }) {
                     <p className="text-sm text-gray-600 dark:text-zinc-300 truncate flex-1 font-medium">{url}</p>
                     <button
                         onClick={onCopy}
-                        className="shrink-0 flex items-center gap-2 px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-bold hover:bg-gray-800 dark:hover:bg-zinc-200 transition-all active:scale-95"
+                        className="btn btn-primary shrink-0"
                     >
                         {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                         {copied ? "Copié" : "Copier"}

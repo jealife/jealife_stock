@@ -59,6 +59,7 @@ export default function UserPhotos() {
             userId={userId}
             type={null}
             includeUnpublished={isOwnProfile}
+            contained={false}
             emptyMessage="Ce photographe n'a pas encore publié d'image."
         />
     );

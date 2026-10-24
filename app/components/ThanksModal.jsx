@@ -83,7 +83,7 @@ export default function ThanksModal({ photo, onClose }) {
                     {photo.type === "video" ? (
                         <video src={photo.url} className="w-full h-full object-cover" />
                     ) : (
-                        <Image
+                        <Image unoptimized
                             src={photo.thumbnailUrl || photo.url}
                             alt={photo.alt || ""}
                             fill
@@ -93,7 +93,7 @@ export default function ThanksModal({ photo, onClose }) {
                 </div>
                 
                 <div className="p-6 sm:p-8 flex-1 flex flex-col justify-center">
-                    <h3 className="text-xl font-black text-gray-900 dark:text-zinc-100 mb-2">Exprimez vos remerciements !</h3>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-100 mb-2">Exprimez vos remerciements !</h3>
                     <p className="text-[14px] text-gray-500 dark:text-zinc-400 mb-6 leading-relaxed">
                         Remerciez <Link href={`/@${photo.author.username}`} onClick={onClose} className="font-semibold text-gray-700 dark:text-zinc-300 underline underline-offset-2 hover:text-gray-900 dark:hover:text-white">{photo.author.name}</Link> sur les réseaux sociaux ou copiez le texte ci-dessous pour l&apos;attribuer à l&apos;artiste.
                     </p>

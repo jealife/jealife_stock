@@ -65,7 +65,7 @@ export default function ReportDialog({ mediaId, userId, onClose }) {
                         </p>
                         <button
                             onClick={onClose}
-                            className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold hover:bg-gray-800 dark:hover:bg-zinc-200 transition-colors"
+                            className="btn btn-primary btn-lg"
                         >
                             Fermer
                         </button>

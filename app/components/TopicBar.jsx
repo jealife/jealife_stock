@@ -102,23 +102,22 @@ export default function TopicBar({ activeTopic = null }) {
     // sur mobile (voir Navbar.jsx, la rangée de recherche mobile se replie
     // sur `scrolled`) : un seul décalage suffit désormais, plus besoin de
     // distinguer mobile/bureau ici.
+    const tabClass = (active) =>
+        `flex items-center h-full whitespace-nowrap text-sm border-b-2 -mb-px transition-colors ${
+            active
+                ? "border-gray-900 dark:border-white text-gray-900 dark:text-white font-medium"
+                : "border-transparent text-gray-500 hover:text-gray-900 dark:text-zinc-400 dark:hover:text-white"
+        }`;
+
     return (
-        <div className="sticky top-16 z-[45] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm border-b border-gray-100 dark:border-zinc-800">
-            <div className="max-w-[1800px] mx-auto px-4 flex items-center gap-6 py-3">
-                <nav className="hidden md:flex items-center gap-1 pr-6 border-r border-gray-200 dark:border-zinc-700 shrink-0">
+        <div className="sticky top-16 z-[45] bg-white dark:bg-zinc-950 border-b border-gray-200 dark:border-zinc-800">
+            <div className="max-w-[1800px] mx-auto px-4 sm:px-5 flex items-stretch gap-6 h-14">
+                <nav aria-label="Type de média" className="hidden md:flex items-stretch gap-6 pr-6 shrink-0 relative after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:h-6 after:w-px after:bg-gray-200 dark:after:bg-zinc-700">
                     {mediaTypes.map((type) => (
-                        <Link
-                            key={type.href}
-                            href={typeHref(type.href)}
-                            className={`px-3 py-1.5 text-sm transition-colors ${
-                                pathname === type.href
-                                    ? "font-semibold text-black dark:text-white"
-                                    : "font-medium text-gray-500 hover:text-black dark:text-zinc-400 dark:hover:text-white"
-                            }`}
-                        >
+                        <Link key={type.href} href={typeHref(type.href)} className={tabClass(pathname === type.href)}>
                             {type.label}
                             {typeCounts && (
-                                <span className="ml-1 text-gray-400 dark:text-zinc-500">{typeCounts[type.countKey]}</span>
+                                <span className="ml-1.5 text-gray-400 dark:text-zinc-500 tabular-nums">{typeCounts[type.countKey]}</span>
                             )}
                         </Link>
                     ))}
@@ -129,31 +128,25 @@ export default function TopicBar({ activeTopic = null }) {
                     tri, et les deux rangées ensemble surchargeaient la
                     barre. */}
                 {!query && (
-                <div className="relative flex-1 overflow-hidden">
+                <div className="relative flex-1 min-w-0 overflow-hidden">
                     {showLeftArrow && (
-                        <div className="absolute left-0 top-0 bottom-0 w-16 bg-linear-to-r from-white via-white dark:from-zinc-900 dark:via-zinc-900 to-transparent z-10 flex items-center pl-2">
+                        <div className="absolute left-0 inset-y-0 w-14 bg-linear-to-r from-white via-white dark:from-zinc-950 dark:via-zinc-950 to-transparent z-10 flex items-center">
                             <button
                                 onClick={() => scroll("left")}
-                                className="p-1.5 bg-white dark:bg-zinc-800 shadow-lg rounded-full border border-gray-100 dark:border-zinc-700 hover:scale-110 transition-transform"
+                                className="w-8 h-8 flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800 transition-colors"
                                 aria-label="Faire défiler vers la gauche"
                             >
-                                <ChevronLeft className="w-4 h-4 text-gray-700 dark:text-zinc-300" />
+                                <ChevronLeft className="w-4 h-4" />
                             </button>
                         </div>
                     )}
 
-                    <div
+                    <nav
                         ref={scrollRef}
-                        className="flex items-center gap-6 overflow-x-auto scrollbar-hide px-2 py-1"
+                        aria-label="Thèmes"
+                        className="flex items-stretch gap-6 h-full overflow-x-auto scrollbar-hide"
                     >
-                        <Link
-                            href="/"
-                            className={`whitespace-nowrap pb-2 text-sm font-medium transition-all border-b-2 hover:text-black dark:hover:text-white ${
-                                !activeTopic && pathname === "/"
-                                    ? "border-black dark:border-white text-black dark:text-white"
-                                    : "border-transparent text-gray-500 dark:text-zinc-400"
-                            }`}
-                        >
+                        <Link href="/" className={tabClass(!activeTopic && pathname === "/")}>
                             À la une
                         </Link>
 
@@ -161,25 +154,21 @@ export default function TopicBar({ activeTopic = null }) {
                             <Link
                                 key={topic.slug}
                                 href={`/themes/${topic.slug}`}
-                                className={`whitespace-nowrap pb-2 text-sm font-medium transition-all border-b-2 hover:text-black dark:hover:text-white ${
-                                    activeTopic === topic.slug
-                                        ? "border-black dark:border-white text-black dark:text-white"
-                                        : "border-transparent text-gray-500 dark:text-zinc-400"
-                                }`}
+                                className={tabClass(activeTopic === topic.slug)}
                             >
                                 {topic.name}
                             </Link>
                         ))}
-                    </div>
+                    </nav>
 
                     {showRightArrow && (
-                        <div className="absolute right-0 top-0 bottom-0 w-16 bg-linear-to-l from-white via-white dark:from-zinc-900 dark:via-zinc-900 to-transparent z-10 flex items-center justify-end pr-2">
+                        <div className="absolute right-0 inset-y-0 w-14 bg-linear-to-l from-white via-white dark:from-zinc-950 dark:via-zinc-950 to-transparent z-10 flex items-center justify-end">
                             <button
                                 onClick={() => scroll("right")}
-                                className="p-1.5 bg-white dark:bg-zinc-800 shadow-lg rounded-full border border-gray-100 dark:border-zinc-700 hover:scale-110 transition-transform"
+                                className="w-8 h-8 flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800 transition-colors"
                                 aria-label="Faire défiler vers la droite"
                             >
-                                <ChevronRight className="w-4 h-4 text-gray-700 dark:text-zinc-300" />
+                                <ChevronRight className="w-4 h-4" />
                             </button>
                         </div>
                     )}

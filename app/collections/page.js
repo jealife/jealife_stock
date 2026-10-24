@@ -17,13 +17,17 @@ export default async function CollectionsPage() {
 
     return (
         <main className="min-h-screen bg-white dark:bg-zinc-950">
-            <div className="max-w-[1200px] mx-auto px-4 py-16">
-                <h1 className="text-4xl font-extrabold text-gray-900 dark:text-zinc-100 mb-3">Collections</h1>
-                <p className="text-gray-500 dark:text-zinc-400 mb-12 max-w-2xl">
-                    Les sélections de l&apos;équipe JEaLiFe Stock, et les meilleures collections
-                    construites par la communauté, à parcourir d&apos;un seul geste plutôt que
-                    thème par thème.
-                </p>
+            <div className="max-w-[1320px] mx-auto px-4 sm:px-5 py-12 md:py-16">
+                <header className="max-w-2xl mb-10 md:mb-12">
+                    <h1 className="text-3xl md:text-[40px] leading-tight font-bold tracking-tight text-gray-900 dark:text-zinc-100">
+                        Collections
+                    </h1>
+                    <p className="mt-3 text-gray-500 dark:text-zinc-400">
+                        Les sélections de l&apos;équipe JEaLiFe Stock, et les meilleures collections
+                        construites par la communauté, à parcourir d&apos;un seul geste plutôt que
+                        thème par thème.
+                    </p>
+                </header>
 
                 {collections.length === 0 ? (
                     <div className="flex flex-col items-center justify-center text-center py-24 text-gray-400 dark:text-zinc-600">
@@ -39,9 +43,9 @@ export default async function CollectionsPage() {
                                     <CollectionMosaic
                                         images={collection.previewImages}
                                         alt={collection.title}
-                                        className="aspect-[4/3] rounded-xl overflow-hidden"
+                                        className="aspect-[4/3] rounded-md overflow-hidden group-hover:opacity-90 transition-opacity"
                                     />
-                                    <h2 className="mt-3 font-bold text-gray-900 dark:text-zinc-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+                                    <h2 className="mt-3 font-semibold text-gray-900 dark:text-zinc-100">
                                         {collection.title}
                                     </h2>
                                     <p className="text-sm text-gray-500 dark:text-zinc-400 mt-0.5">

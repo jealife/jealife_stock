@@ -45,7 +45,7 @@ export default function RankingBars({ title, items, color, valueLabel, metricCon
                                 <td className="py-1.5 text-gray-700 dark:text-zinc-300">
                                     <span className="flex items-center gap-2 min-w-0">
                                         {item.imageUrl && (
-                                            <Image
+                                            <Image unoptimized
                                                 src={item.imageUrl}
                                                 alt=""
                                                 width={24}
@@ -71,7 +71,7 @@ export default function RankingBars({ title, items, color, valueLabel, metricCon
                                 <span className="flex items-center gap-2 min-w-0 text-gray-700 dark:text-zinc-300 font-medium">
                                     <span className="text-gray-300 dark:text-zinc-600 font-bold tabular-nums shrink-0">{i + 1}</span>
                                     {item.imageUrl && (
-                                        <Image
+                                        <Image unoptimized
                                             src={item.imageUrl}
                                             alt=""
                                             width={28}

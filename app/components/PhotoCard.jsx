@@ -3,38 +3,90 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { BadgeCheck, MapPin, Clock } from "lucide-react";
+import { BadgeCheck, Clock } from "lucide-react";
 import LikeButton from "./LikeButton";
 import DownloadButton from "./DownloadButton";
 import SaveToCollectionButton from "./SaveToCollectionButton";
 import ImageLoader from "./ImageLoader";
 import { locationLabel, mediaUrl } from "../lib/media";
 
+/** Auteur de la carte : en blanc sur l'image au survol (bureau), en clair au-dessus sur mobile. */
+export function CardAuthor({ media, place, onImage = false }) {
+    return (
+        <Link href={`/@${media.author.username}`} className="flex items-center gap-2.5 min-w-0 group/author">
+            <Image
+                src={media.author.avatar}
+                alt=""
+                width={32}
+                height={32}
+                unoptimized
+                className="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-black/5 dark:ring-white/10"
+            />
+            <span className="min-w-0 leading-tight">
+                <span
+                    className={`flex items-center gap-1 text-sm font-medium truncate ${
+                        onImage
+                            ? "text-white/90 group-hover/author:text-white"
+                            : "text-gray-900 dark:text-zinc-100"
+                    }`}
+                >
+                    <span className="truncate">{media.author.name}</span>
+                    {media.author.isVerified && (
+                        <BadgeCheck
+                            className={`w-3.5 h-3.5 shrink-0 ${onImage ? "text-white" : "text-gray-500 dark:text-zinc-400"}`}
+                            aria-label="Contributeur vérifié"
+                        />
+                    )}
+                </span>
+                {place && (
+                    <span className={`block text-xs truncate ${onImage ? "text-white/75" : "text-gray-500 dark:text-zinc-400"}`}>
+                        {place}
+                    </span>
+                )}
+            </span>
+        </Link>
+    );
+}
+
+/**
+ * Carte de grille façon Unsplash. Sur bureau, les actions n'apparaissent
+ * qu'au survol, posées sur un léger dégradé. Sur mobile (pas de survol),
+ * elles ne recouvrent jamais la photo : auteur au-dessus, actions en
+ * dessous.
+ *
+ * Les boutons sont posés hors du cadre `overflow-hidden` de l'image : à
+ * l'intérieur, les menus qu'ils ouvrent (collections, tailles) seraient
+ * coupés par les bords de la carte.
+ */
 export default function PhotoCard({ photo, liked = false, hideActions = false, priority = false }) {
-    // Chargement progressif : chaque carte garde son propre fond (aperçu
-    // flou, ou à défaut un skeleton) tant que sa vignette n'est pas là.
-    // L'image n'est plus masquée (opacité 0) jusqu'à la fin de son
-    // chargement : rendue par le serveur, elle restait invisible jusqu'à ce
-    // que tout le JavaScript de la page soit chargé, ce qui sur une 3G
-    // retardait de plusieurs secondes l'affichage de la grille. Elle se
-    // dessine maintenant par-dessus son fond dès que ses octets arrivent.
+    // Chaque carte garde son fond (aperçu flou, ou à défaut un skeleton)
+    // tant que sa vignette n'est pas arrivée ; l'image n'est jamais masquée
+    // en attendant le JavaScript (voir historique : 3G).
     const [loaded, setLoaded] = useState(false);
 
     if (!photo) return null;
 
     const place = locationLabel(photo);
     const hasDimensions = photo.width && photo.height;
+    const isPending = photo.status === "pending";
+    const showActions = !hideActions && !isPending;
 
-    const isPending = photo.status === 'pending';
+    // Visible au survol, au clavier, et tant qu'un menu ouvert depuis la
+    // carte est affiché (sinon il disparaîtrait avec le curseur).
+    const revealOnHover =
+        "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100 transition-opacity duration-200";
 
-    // Calques internes de la carte (boutons, badges) volontairement sous
-    // z-30 : à z-30 et z-40, ils passaient par-dessus les barres collantes
-    // (onglets du profil, barre de la fiche photo) au défilement.
     return (
-        <div className="relative group mb-6 break-inside-avoid">
-            <div className="relative w-full rounded-2xl bg-gray-100 dark:bg-zinc-800 shadow-sm transition-all duration-500 hover:shadow-xl hover:-translate-y-1">
-                <div className="relative w-full overflow-hidden rounded-2xl">
-                    <Link href={mediaUrl(photo)} className="block">
+        <figure className="group relative break-inside-avoid">
+            {showActions && (
+                <div className="md:hidden pb-3">
+                    <CardAuthor media={photo} place={place} />
+                </div>
+            )}
+
+            <div className="relative">
+                <div className="relative overflow-hidden rounded-sm bg-gray-100 dark:bg-zinc-800">
+                    <Link href={mediaUrl(photo)} className="block cursor-zoom-in" aria-label={photo.alt || photo.title || "Voir l'image"}>
                         {hasDimensions ? (
                             <div className="relative w-full" style={{ aspectRatio: `${photo.width} / ${photo.height}` }}>
                                 {!loaded && !photo.blurDataURL && <ImageLoader />}
@@ -42,8 +94,8 @@ export default function PhotoCard({ photo, liked = false, hideActions = false, p
                                     src={photo.thumbnailUrl}
                                     alt={photo.alt}
                                     fill
-                                    className="object-cover transform transition-transform duration-700 group-hover:scale-105 cursor-zoom-in"
-                                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                                    className="object-cover"
+                                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 420px"
                                     priority={priority}
                                     unoptimized
                                     onLoad={() => setLoaded(true)}
@@ -63,7 +115,7 @@ export default function PhotoCard({ photo, liked = false, hideActions = false, p
                                     width={0}
                                     height={0}
                                     sizes="100vw"
-                                    className="relative w-full h-auto block object-cover transform transition-transform duration-700 group-hover:scale-105 cursor-zoom-in"
+                                    className="relative w-full h-auto block object-cover"
                                     loading="lazy"
                                     unoptimized
                                     onLoad={() => setLoaded(true)}
@@ -73,75 +125,51 @@ export default function PhotoCard({ photo, liked = false, hideActions = false, p
                             </div>
                         )}
                     </Link>
-                </div>
 
-                {/* Badge « En cours d'analyse » — visible uniquement par le contributeur
-                    sur son propre profil. N'est jamais rendu pour un visiteur ou dans le
-                    feed éditorial car ces photos ne sont pas requêtées dans ce contexte. */}
-                {isPending && (
-                    <div className="absolute inset-0 rounded-2xl pointer-events-none z-10">
-                        <div className="absolute inset-0 bg-black/40 rounded-2xl" />
-                        <div className="absolute top-3 left-3">
-                            <span className="inline-flex items-center gap-1.5 bg-amber-500/90 text-white text-[11px] font-semibold px-2.5 py-1 rounded-full shadow backdrop-blur-sm">
+                    {showActions && (
+                        <div
+                            aria-hidden="true"
+                            className={`hidden md:block absolute inset-0 pointer-events-none bg-linear-to-b from-black/20 via-transparent to-black/50 ${revealOnHover}`}
+                        />
+                    )}
+
+                    {/* Badge « En cours d'analyse » : visible uniquement par le
+                        contributeur sur son propre profil, ces photos n'étant
+                        jamais requêtées ailleurs. */}
+                    {isPending && (
+                        <div className="absolute inset-0 pointer-events-none bg-black/40">
+                            <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 bg-amber-500 text-white text-xs font-medium px-2 py-1 rounded-md">
                                 <Clock className="w-3 h-3 shrink-0" />
                                 En cours d&apos;analyse
                             </span>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
 
-                {!hideActions && !isPending && (
+                {showActions && (
                     <>
-                        <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
-                            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/0 to-black/30 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                        </div>
-
-                        <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 z-[11]">
-                            <LikeButton
-                                mediaId={photo.id}
-                                initialLiked={liked}
-                                initialCount={photo.likes}
-                                variant="overlay"
-                            />
+                        <div className={`hidden md:flex absolute top-4 right-4 gap-2 z-[11] ${revealOnHover}`}>
+                            <LikeButton mediaId={photo.id} initialLiked={liked} initialCount={photo.likes} variant="overlay" />
                             <SaveToCollectionButton mediaId={photo.id} />
                         </div>
 
-                        <div className="absolute bottom-0 left-0 right-0 p-5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 z-[12]">
-                            <div className="flex items-center justify-between gap-3">
-                                <Link
-                                    href={`/@${photo.author.username}`}
-                                    className="flex items-center gap-3 group/author min-w-0"
-                                >
-                                    <Image
-                                        src={photo.author.avatar}
-                                        alt=""
-                                        width={36}
-                                        height={36}
-                                        unoptimized
-                                        className="w-9 h-9 rounded-full border-2 border-white/20 object-cover shadow-sm group-hover/author:border-white transition-colors shrink-0"
-                                    />
-                                    <span className="drop-shadow-md min-w-0">
-                                        <span className="flex items-center gap-1 text-white font-medium text-sm leading-tight truncate">
-                                            {photo.author.name}
-                                            {photo.author.isVerified && (
-                                                <BadgeCheck className="w-3.5 h-3.5 text-white shrink-0" aria-label="Contributeur vérifié" />
-                                            )}
-                                        </span>
-                                        {place && (
-                                            <span className="flex items-center gap-1 text-[10px] text-white/80 mt-0.5 font-light truncate">
-                                                <MapPin className="w-2.5 h-2.5 shrink-0" />
-                                                {place}
-                                            </span>
-                                        )}
-                                    </span>
-                                </Link>
-
-                                <DownloadButton media={photo} />
-                            </div>
+                        <div className={`hidden md:flex absolute bottom-0 inset-x-0 p-4 items-end justify-between gap-3 z-[12] ${revealOnHover}`}>
+                            <CardAuthor media={photo} place={place} onImage />
+                            <DownloadButton media={photo} />
                         </div>
                     </>
                 )}
             </div>
-        </div>
+
+            {showActions && (
+                <div className="md:hidden flex items-center justify-between gap-2 pt-3">
+                    <div className="flex items-center gap-2">
+                        <LikeButton mediaId={photo.id} initialLiked={liked} initialCount={photo.likes} variant="outline" />
+                        <SaveToCollectionButton mediaId={photo.id} variant="outline" menuAlign="left" />
+                    </div>
+                    <DownloadButton media={photo} variant="outline" />
+                </div>
+            )}
+        </figure>
     );
 }

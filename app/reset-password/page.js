@@ -95,7 +95,7 @@ export default function ResetPasswordPage() {
                 </p>
                 <Link
                     href="/login"
-                    className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold hover:bg-gray-800 dark:hover:bg-zinc-200 transition-colors"
+                    className="btn btn-primary btn-lg"
                 >
                     Retour à la connexion
                 </Link>
@@ -165,7 +165,7 @@ export default function ResetPasswordPage() {
                     <button
                         type="submit"
                         disabled={saving}
-                        className="w-full py-4 bg-black dark:bg-white text-white dark:text-black font-bold rounded-2xl hover:bg-gray-800 dark:hover:bg-zinc-200 transition-all active:scale-95 disabled:opacity-50"
+                        className="btn btn-primary btn-lg w-full"
                     >
                         {saving ? "Enregistrement…" : "Enregistrer le mot de passe"}
                     </button>

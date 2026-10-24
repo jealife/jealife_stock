@@ -80,7 +80,7 @@ export default function UserDownloadsPage() {
     }
 
     return (
-        <div className="columns-1 sm:columns-2 lg:columns-3 gap-6">
+        <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 *:mb-10 sm:*:mb-6">
             {items.map((item) =>
                 item.type === "video" ? (
                     <div key={item.id} className="mb-6 break-inside-avoid">

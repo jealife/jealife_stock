@@ -479,7 +479,7 @@ export default function EditPhotoPage() {
                                 <button
                                     type="submit"
                                     disabled={saving}
-                                    className="flex-1 py-4 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold hover:bg-gray-800 dark:hover:bg-zinc-200 transition-all shadow-lg active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="btn btn-primary btn-lg flex-1"
                                 >
                                     {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
                                     Enregistrer les modifications

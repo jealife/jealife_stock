@@ -78,7 +78,7 @@ export default function UserLikesPage() {
     }
 
     return (
-        <div className="columns-1 sm:columns-2 lg:columns-3 gap-6">
+        <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 *:mb-10 sm:*:mb-6">
             {items.map((item) => (
                 <PhotoCard key={item.id} photo={item} liked />
             ))}

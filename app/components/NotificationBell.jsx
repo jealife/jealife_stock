@@ -93,7 +93,7 @@ export default function NotificationBell({ iconSize = 24, panelClassName = "abso
             </button>
 
             {open && (
-                <div className={`${panelClassName} bg-white dark:bg-zinc-900 rounded-xl shadow-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden z-70 animate-in fade-in zoom-in-95 duration-200`}>
+                <div className={`${panelClassName} bg-white dark:bg-zinc-900 rounded-lg shadow-xl border border-gray-200 dark:border-zinc-800 overflow-hidden z-70 animate-in fade-in zoom-in-95 duration-200`}>
                     <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-zinc-800">
                         <span className="font-bold text-sm text-gray-900 dark:text-zinc-100">Activité</span>
                         {unreadCount > 0 && (

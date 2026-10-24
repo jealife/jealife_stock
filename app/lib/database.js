@@ -448,7 +448,7 @@ export async function getRelatedMedia(media, limit = 12) {
 // Thèmes & pays
 // ---------------------------------------------------------------------------
 
-export async function getTopics({ featuredOnly = false, kind = null, limit = 60 } = {}) {
+export async function getTopics({ featuredOnly = false, kind = null, limit = 60, withCovers = false } = {}) {
     try {
         let query = supabase
             .from('topics')
@@ -464,37 +464,28 @@ export async function getTopics({ featuredOnly = false, kind = null, limit = 60 
         if (error) throw error;
 
         const topics = data || [];
+        if (!withCovers) return topics;
 
-        // Pour chaque topic sans cover_image_url, on va chercher la thumbnail
-        // de la première photo associée via media_topics
+        // Thème sans couverture choisie : sa photo la plus aimée. Une requête
+        // par thème (quelques catégories) : l'ancienne requête groupée
+        // plafonnait le nombre de liens tous thèmes confondus, et les thèmes
+        // les plus fournis épuisaient ce quota — la plupart des autres
+        // restaient sans image, affichés sur un simple dégradé.
         const needsCover = topics.filter((t) => !t.cover_image_url && t.total_media > 0);
-
-        if (needsCover.length > 0) {
-            const ids = needsCover.map((t) => t.id);
-
-            const { data: links } = await supabase
-                .from('media_topics')
-                .select('topic_id, media ( thumbnail_url )')
-                .in('topic_id', ids)
-                .limit(needsCover.length * 5);
-
-            if (links) {
-                // Indexe la première photo valide trouvée par topic_id
-                const coverMap = {};
-                for (const link of links) {
-                    if (link.media && !coverMap[link.topic_id]) {
-                        const imgUrl = link.media.thumbnail_url || link.media.url;
-                        if (imgUrl) coverMap[link.topic_id] = imgUrl;
-                    }
-                }
-                // Injecte dans les topics
-                for (const topic of topics) {
-                    if (!topic.cover_image_url && coverMap[topic.id]) {
-                        topic.cover_image_url = coverMap[topic.id];
-                    }
-                }
-            }
-        }
+        await Promise.all(
+            needsCover.map(async (topic) => {
+                const { data: cover } = await supabase
+                    .from('media')
+                    .select('thumbnail_url, media_topics!inner ( topic_id )')
+                    .eq('media_topics.topic_id', topic.id)
+                    .eq('status', 'published')
+                    .eq('is_premium', false)
+                    .order('likes_count', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+                if (cover?.thumbnail_url) topic.cover_image_url = cover.thumbnail_url;
+            })
+        );
 
         return topics;
     } catch (error) {

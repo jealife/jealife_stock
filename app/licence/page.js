@@ -34,7 +34,7 @@ export default function LicensePage() {
     return (
         <main className="min-h-screen bg-white dark:bg-zinc-950">
             <div className="max-w-3xl mx-auto px-4 py-16 md:py-24">
-                <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-zinc-100 mb-4">
+                <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-zinc-100 mb-4">
                     Licences JEaLiFe
                 </h1>
                 <p className="text-lg text-gray-500 dark:text-zinc-400 mb-12">

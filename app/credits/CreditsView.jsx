@@ -67,7 +67,7 @@ export default function CreditsView() {
                     <Coins className="w-7 h-7 text-amber-500" />
                 </div>
 
-                <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-zinc-100 mb-4">
+                <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-zinc-100 mb-4">
                     Crédits
                 </h1>
                 <p className="text-lg text-gray-500 dark:text-zinc-400 mb-10 max-w-xl">
@@ -117,7 +117,7 @@ export default function CreditsView() {
                                 className="p-6 border border-gray-100 dark:border-zinc-800 rounded-2xl flex flex-col gap-4"
                             >
                                 <div>
-                                    <p className="text-2xl font-extrabold text-gray-900 dark:text-zinc-100">
+                                    <p className="text-2xl font-bold text-gray-900 dark:text-zinc-100">
                                         {pack.credits} crédit{pack.credits > 1 ? "s" : ""}
                                     </p>
                                     <p className="text-gray-500 dark:text-zinc-400 text-sm">{fcfa(pack.price_fcfa)}</p>
@@ -136,7 +136,7 @@ export default function CreditsView() {
                                         type="button"
                                         onClick={() => buy(pack)}
                                         disabled={buyingId === pack.id}
-                                        className="mt-auto py-3 px-4 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-bold hover:bg-gray-800 dark:hover:bg-zinc-200 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                                        className="btn btn-primary btn-lg mt-auto"
                                     >
                                         {buyingId === pack.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Acheter"}
                                     </button>

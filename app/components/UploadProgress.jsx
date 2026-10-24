@@ -92,7 +92,7 @@ export default function UploadProgress({ percent = 0, label }) {
                             className="text-gray-900 dark:text-zinc-100 transition-all duration-500 ease-out"
                         />
                     </svg>
-                    <div className="absolute inset-0 flex items-center justify-center text-2xl font-extrabold text-gray-900 dark:text-zinc-100">
+                    <div className="absolute inset-0 flex items-center justify-center text-2xl font-bold text-gray-900 dark:text-zinc-100">
                         {Math.round(clamped)}%
                     </div>
                 </div>

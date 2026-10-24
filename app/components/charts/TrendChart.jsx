@@ -96,7 +96,7 @@ export default function TrendChart({ title, data, color, total }) {
             <div className="flex items-start justify-between mb-1 gap-2">
                 <div>
                     <h3 className="text-sm font-bold text-gray-900 dark:text-zinc-100">{title}</h3>
-                    <p className="text-2xl font-extrabold text-gray-900 dark:text-zinc-100 mt-1 tabular-nums">
+                    <p className="text-2xl font-bold text-gray-900 dark:text-zinc-100 mt-1 tabular-nums">
                         {total.toLocaleString("fr-FR")}
                     </p>
                 </div>

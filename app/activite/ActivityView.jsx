@@ -74,7 +74,7 @@ export default function ActivityView() {
             <div className="max-w-2xl mx-auto px-4 py-12 md:py-20">
                 <div className="flex items-center justify-between mb-10">
                     <div>
-                        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-zinc-100 flex items-center gap-3">
+                        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-zinc-100 flex items-center gap-3">
                             <Bell className="w-7 h-7 text-gray-300 dark:text-zinc-600" /> Activité
                         </h1>
                         <p className="text-gray-500 dark:text-zinc-400 mt-2">

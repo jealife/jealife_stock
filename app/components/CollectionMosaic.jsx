@@ -23,7 +23,7 @@ export default function CollectionMosaic({ images = [], alt = "", className = ""
     if (!second) {
         return (
             <div className={`relative bg-gray-100 dark:bg-zinc-800 ${className}`}>
-                <Image src={first} alt={alt} fill sizes="(max-width: 640px) 100vw, 33vw" className="object-cover" />
+                <Image unoptimized src={first} alt={alt} fill sizes="(max-width: 640px) 100vw, 33vw" className="object-cover" />
             </div>
         );
     }
@@ -35,10 +35,10 @@ export default function CollectionMosaic({ images = [], alt = "", className = ""
                 style={{ gridTemplateRows: "1fr" }}
             >
                 <div className="relative h-full w-full">
-                    <Image src={first} alt={alt} fill sizes="(max-width: 640px) 50vw, 16vw" className="object-cover" />
+                    <Image unoptimized src={first} alt={alt} fill sizes="(max-width: 640px) 50vw, 16vw" className="object-cover" />
                 </div>
                 <div className="relative h-full w-full">
-                    <Image src={second} alt="" fill sizes="(max-width: 640px) 50vw, 16vw" className="object-cover" />
+                    <Image unoptimized src={second} alt="" fill sizes="(max-width: 640px) 50vw, 16vw" className="object-cover" />
                 </div>
             </div>
         );
@@ -46,7 +46,7 @@ export default function CollectionMosaic({ images = [], alt = "", className = ""
 
     // `gridTemplateRows` explicite : sans lui, les deux rangées implicites
     // restent en `auto` (taille au contenu) et n'occupent jamais la hauteur
-    // donnée par `aspect-[4/3]` sur le conteneur — les `<Image fill>` se
+    // donnée par `aspect-[4/3]` sur le conteneur — les `<Image unoptimized fill>` se
     // retrouvent alors dans une boîte de hauteur nulle, invisibles bien que
     // chargées avec succès.
     return (
@@ -58,10 +58,10 @@ export default function CollectionMosaic({ images = [], alt = "", className = ""
                 <Image src={first} alt={alt} fill sizes="(max-width: 640px) 66vw, 22vw" className="object-cover" />
             </div>
             <div className="relative h-full w-full">
-                <Image src={second} alt="" fill sizes="(max-width: 640px) 34vw, 11vw" className="object-cover" />
+                <Image unoptimized src={second} alt="" fill sizes="(max-width: 640px) 34vw, 11vw" className="object-cover" />
             </div>
             <div className="relative h-full w-full">
-                <Image src={third} alt="" fill sizes="(max-width: 640px) 34vw, 11vw" className="object-cover" />
+                <Image unoptimized src={third} alt="" fill sizes="(max-width: 640px) 34vw, 11vw" className="object-cover" />
             </div>
         </div>
     );

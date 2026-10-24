@@ -32,8 +32,8 @@ export default async function CountriesPage() {
 
     return (
         <main className="min-h-screen bg-white dark:bg-zinc-950">
-            <div className="max-w-[1200px] mx-auto px-4 py-16">
-                <h1 className="text-4xl font-extrabold text-gray-900 dark:text-zinc-100 mb-3">
+            <div className="max-w-[1320px] mx-auto px-4 sm:px-5 py-12 md:py-16">
+                <h1 className="text-3xl md:text-[40px] leading-tight font-bold tracking-tight text-gray-900 dark:text-zinc-100 mb-3">
                     Parcourir par pays
                 </h1>
                 <p className="text-gray-500 dark:text-zinc-400 mb-12 max-w-2xl">
@@ -47,7 +47,7 @@ export default async function CountriesPage() {
 
                     return (
                         <section key={region} className="mb-12">
-                            <h2 className="text-sm font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-4">
+                            <h2 className="text-sm font-medium text-gray-500 dark:text-zinc-400 mb-4">
                                 {label}
                             </h2>
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">

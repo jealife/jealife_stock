@@ -92,7 +92,7 @@ function AuthCallback() {
                 <p className="text-gray-500 dark:text-zinc-400 max-w-md mb-8">{error}</p>
                 <Link
                     href="/login"
-                    className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold hover:bg-gray-800 dark:hover:bg-zinc-200 transition-colors"
+                    className="btn btn-primary btn-lg"
                 >
                     Revenir à la connexion
                 </Link>

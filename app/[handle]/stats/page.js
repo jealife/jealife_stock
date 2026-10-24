@@ -152,7 +152,7 @@ export default function UserStatsPage() {
                     inventée. */}
                 <div className="border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 bg-white dark:bg-zinc-900">
                     <span className="text-sm font-bold text-gray-900 dark:text-zinc-100">Vues</span>
-                    <p className="text-2xl font-extrabold text-gray-900 dark:text-zinc-100 mt-1 tabular-nums">
+                    <p className="text-2xl font-bold text-gray-900 dark:text-zinc-100 mt-1 tabular-nums">
                         {stats.total_views?.toLocaleString('fr-FR') || 0}
                     </p>
                     <p className="text-sm text-gray-400 dark:text-zinc-500 mt-3">

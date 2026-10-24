@@ -86,7 +86,7 @@ export default function TeamPage() {
                     </p>
                     <a
                         href="mailto:jealife.pictures@gmail.com"
-                        className="inline-flex items-center gap-2 px-8 py-4 bg-black dark:bg-white text-white dark:text-black rounded-full font-bold hover:bg-gray-800 dark:hover:bg-zinc-200 transition-all"
+                        className="btn btn-primary btn-lg"
                     >
                         <Mail className="w-5 h-5" /> Écrivez-nous
                     </a>
