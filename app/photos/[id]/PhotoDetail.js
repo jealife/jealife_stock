@@ -659,9 +659,9 @@ export default function PhotoDetail({ initialPhoto }) {
                 <section className="mt-10 border-t border-gray-200 dark:border-zinc-800">
                     <div className="max-w-[1320px] mx-auto px-4 sm:px-5 py-12 md:py-16">
                         <h2 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-zinc-100 mb-6 md:mb-8">Images similaires</h2>
-                        <div className="columns-2 lg:columns-3 gap-3 sm:gap-6 *:mb-3 sm:*:mb-6">
+                        <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 *:mb-10 sm:*:mb-6">
                             {related.map((item) => (
-                                <PhotoCard key={item.id} photo={item} hideActions />
+                                <PhotoCard key={item.id} photo={item} />
                             ))}
                         </div>
                     </div>
