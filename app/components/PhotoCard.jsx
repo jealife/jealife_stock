@@ -58,7 +58,10 @@ export function CardAuthor({ media, place, onImage = false }) {
  * l'intérieur, les menus qu'ils ouvrent (collections, tailles) seraient
  * coupés par les bords de la carte.
  */
-export default function PhotoCard({ photo, liked = false, hideActions = false, priority = false }) {
+// `mobileActions={false}` : grille serrée sur mobile (deux colonnes, ex.
+// images similaires) où l'auteur et la rangée de boutons n'ont pas la place.
+// Le survol sur ordinateur reste inchangé.
+export default function PhotoCard({ photo, liked = false, hideActions = false, priority = false, mobileActions = true }) {
     // Chaque carte garde son fond (aperçu flou, ou à défaut un skeleton)
     // tant que sa vignette n'est pas arrivée ; l'image n'est jamais masquée
     // en attendant le JavaScript (voir historique : 3G).
@@ -78,7 +81,7 @@ export default function PhotoCard({ photo, liked = false, hideActions = false, p
 
     return (
         <figure className="group relative break-inside-avoid">
-            {showActions && (
+            {showActions && mobileActions && (
                 <div className="md:hidden pb-3">
                     <CardAuthor media={photo} place={place} />
                 </div>
@@ -161,7 +164,7 @@ export default function PhotoCard({ photo, liked = false, hideActions = false, p
                 )}
             </div>
 
-            {showActions && (
+            {showActions && mobileActions && (
                 <div className="md:hidden flex items-center justify-between gap-2 pt-3">
                     <div className="flex items-center gap-2">
                         <LikeButton mediaId={photo.id} initialLiked={liked} initialCount={photo.likes} variant="outline" />
