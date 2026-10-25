@@ -1,3 +1,4 @@
+import { ARTICLES } from "./help/articles";
 import { supabase } from "./lib/supabase";
 import { slugifyClient } from "./lib/media";
 import { absoluteUrl } from "./lib/site";
@@ -29,6 +30,7 @@ export default async function sitemap() {
         { path: "/licence", changeFrequency: "monthly", priority: 0.6 },
         { path: "/about", changeFrequency: "monthly", priority: 0.5 },
         { path: "/help", changeFrequency: "monthly", priority: 0.4 },
+        ...ARTICLES.map((article) => ({ path: `/help/${article.slug}`, changeFrequency: "monthly", priority: 0.3 })),
         // /login, /join, /submit et /settings sont retirés : ce sont des
         // formulaires, ils n'ont rien à faire dans un plan de site et diluent
         // le budget d'exploration.

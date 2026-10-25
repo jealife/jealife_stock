@@ -1,64 +1,75 @@
+import Link from "next/link";
+import HelpSearch from "./HelpSearch";
+import { ARTICLES, CATEGORIES, CONTACT_EMAIL, articlesInCategory } from "./articles";
 
-"use client";
+export const metadata = {
+    title: "Centre d'aide",
+    description:
+        "Télécharger, utiliser la licence, publier ses images, gérer son compte : toutes les réponses sur JEaLiFe Stock.",
+    alternates: { canonical: "/help" },
+};
 
-import { Search, HelpCircle, FileText, MessageCircle } from "lucide-react";
+/** Texte brut d'un article, pour la recherche. */
+function plainText(article) {
+    return article.body
+        .flatMap((block) => block.items || [block.text])
+        .join(" ")
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+}
 
 export default function HelpPage() {
+    const searchable = ARTICLES.map((article) => ({
+        slug: article.slug,
+        title: article.title,
+        summary: article.summary,
+        text: plainText(article),
+    }));
+
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-zinc-950">
+        <main className="min-h-screen bg-white dark:bg-zinc-950">
+            <div className="max-w-[1080px] mx-auto px-4 sm:px-5 py-12 md:py-16">
+                <h1 className="text-3xl md:text-[40px] leading-tight font-bold tracking-tight text-gray-900 dark:text-zinc-100">
+                    Centre d&apos;aide
+                </h1>
+                <p className="mt-3 text-gray-500 dark:text-zinc-400 max-w-xl">
+                    Tout ce qu&apos;il faut savoir pour télécharger, utiliser et publier des images sur JEaLiFe Stock.
+                </p>
 
-            {/* Search Header */}
-            <div className="bg-black text-white py-20 px-6 text-center">
-                <h1 className="text-3xl md:text-5xl font-bold mb-6">Comment pouvons-nous vous aider ?</h1>
-                <div className="max-w-xl mx-auto relative">
-                    <Search className="absolute left-4 top-3.5 text-gray-400 w-5 h-5" />
-                    <input
-                        type="text"
-                        placeholder="Rechercher dans l'aide..."
-                        className="w-full h-12 pl-12 pr-4 rounded-lg bg-white dark:bg-zinc-900 text-gray-900 dark:text-zinc-100 focus:outline-none"
-                    />
-                </div>
-            </div>
-
-            <div className="max-w-5xl mx-auto px-6 py-16">
-                <div className="grid md:grid-cols-3 gap-8">
-                    <div className="bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-800 hover:shadow-md transition-shadow cursor-pointer">
-                        <div className="w-12 h-12 bg-blue-50 dark:bg-blue-950 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6">
-                            <HelpCircle className="w-6 h-6" />
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-100 mb-2">FAQ Générale</h3>
-                        <p className="text-gray-500 dark:text-zinc-400 text-sm">Réponses aux questions les plus fréquentes sur l&apos;utilisation du site.</p>
-                    </div>
-                    <div className="bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-800 hover:shadow-md transition-shadow cursor-pointer">
-                        <div className="w-12 h-12 bg-green-50 dark:bg-green-950 rounded-xl flex items-center justify-center text-green-600 dark:text-green-400 mb-6">
-                            <FileText className="w-6 h-6" />
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-100 mb-2">Licence & Droits</h3>
-                        <p className="text-gray-500 dark:text-zinc-400 text-sm">Comprendre ce que vous pouvez et ne pouvez pas faire avec les images.</p>
-                    </div>
-                    <div className="bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-800 hover:shadow-md transition-shadow cursor-pointer">
-                        <div className="w-12 h-12 bg-purple-50 dark:bg-purple-950 rounded-xl flex items-center justify-center text-purple-600 dark:text-purple-400 mb-6">
-                            <MessageCircle className="w-6 h-6" />
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-100 mb-2">Pour les Créateurs</h3>
-                        <p className="text-gray-500 dark:text-zinc-400 text-sm">Guides pour uploader, gérer votre profil et gagner en visibilité.</p>
-                    </div>
-                </div>
-
-                <div className="mt-16">
-                    <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-zinc-100">Articles populaires</h2>
-                    <ul className="space-y-4">
-                        {['Comment télécharger une photo en haute résolution ?', 'Puis-je utiliser les photos pour un projet commercial ?', 'Comment devenir contributeur ?', 'Mot de passe oublié ou compte bloqué'].map((article, i) => (
-                            <li key={i}>
-                                <a href="#" className="flex items-center text-gray-700 dark:text-zinc-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium group">
-                                    <span className="w-1.5 h-1.5 bg-gray-300 dark:bg-zinc-600 rounded-full mr-3 group-hover:bg-blue-600 dark:group-hover:bg-blue-400 transition-colors"></span>
-                                    {article}
-                                </a>
-                            </li>
+                <HelpSearch articles={searchable}>
+                    <div className="grid md:grid-cols-2 gap-x-12 gap-y-12">
+                        {CATEGORIES.map((category) => (
+                            <section key={category.slug} aria-labelledby={`cat-${category.slug}`}>
+                                <h2 id={`cat-${category.slug}`} className="text-lg font-semibold text-gray-900 dark:text-zinc-100">
+                                    {category.title}
+                                </h2>
+                                <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">{category.description}</p>
+                                <ul className="mt-4 border-t border-gray-200 dark:border-zinc-800">
+                                    {articlesInCategory(category.slug).map((article) => (
+                                        <li key={article.slug} className="border-b border-gray-200 dark:border-zinc-800">
+                                            <Link
+                                                href={`/help/${article.slug}`}
+                                                className="block py-3 text-[15px] text-gray-700 dark:text-zinc-300 hover:text-gray-900 dark:hover:text-white hover:underline underline-offset-2"
+                                            >
+                                                {article.title}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </section>
                         ))}
-                    </ul>
-                </div>
+                    </div>
+                </HelpSearch>
+
+                <section className="mt-16 pt-8 border-t border-gray-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h2 className="font-semibold text-gray-900 dark:text-zinc-100">Vous ne trouvez pas votre réponse ?</h2>
+                        <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">Écrivez-nous par e-mail, nous vous répondrons.</p>
+                    </div>
+                    <a href={`mailto:${CONTACT_EMAIL}`} className="btn btn-secondary self-start">
+                        {CONTACT_EMAIL}
+                    </a>
+                </section>
             </div>
-        </div>
+        </main>
     );
 }
