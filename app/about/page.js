@@ -59,10 +59,10 @@ export default async function AboutPage() {
                                 JEaLiFe Stock est né d&apos;une idée simple : de belles images ne devraient pas être enfermées derrière des murs payants.
                             </p>
                             <p>
-                                Nous relions des photographes à des créateurs du monde entier (designers, écrivains, artistes, entrepreneurs) qui ont besoin d&apos;images authentiques pour raconter leurs histoires.
+                                Nous relions des photographes à des créateurs (designers, écrivains, artistes, entrepreneurs) qui ont besoin d&apos;images authentiques pour raconter leurs histoires.
                             </p>
                             <p>
-                                Une collection personnelle devenue une plateforme ouverte, alimentée par une communauté généreuse.
+                                Une collection personnelle devenue une plateforme ouverte aux photographes qui veulent la faire grandir.
                             </p>
                         </div>
                     </div>
