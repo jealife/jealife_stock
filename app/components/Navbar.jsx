@@ -41,8 +41,6 @@ const MENU_SECTIONS = [
         icon: Building2,
         links: [
             { label: "Qui sommes-nous ?", href: "/about" },
-            { label: "Notre histoire", href: "/history" },
-            { label: "L'équipe", href: "/team" },
             { label: "Presse", href: "/press" },
         ],
     },

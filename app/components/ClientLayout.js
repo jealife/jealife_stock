@@ -25,9 +25,7 @@ export default function ClientLayout({ children }) {
 
     const footerRoutes = [
         "/about",
-        "/history",
         "/press",
-        "/team",
         "/help",
         "/licence",
         "/settings",

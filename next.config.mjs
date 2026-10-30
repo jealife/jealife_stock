@@ -21,6 +21,10 @@ const nextConfig = {
 
   async redirects() {
     return [
+      // Pages retirées le temps de réécrire leur contenu (voir app/_history
+      // et app/_team). Temporaire : les anciens liens restent valides.
+      { source: "/history", destination: "/about", permanent: false },
+      { source: "/team", destination: "/about", permanent: false },
       // L'ancien portail d'entrée a disparu. Le paramètre `next` n'est
       // volontairement pas suivi : une adresse comme `/\exemple.com` en
       // ferait une redirection ouverte vers un autre site.

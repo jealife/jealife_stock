@@ -36,8 +36,6 @@ const SECTIONS = [
         title: "À propos",
         links: [
             { label: "Qui sommes-nous ?", href: "/about" },
-            { label: "Notre histoire", href: "/history" },
-            { label: "L'équipe", href: "/team" },
             { label: "Presse", href: "/press" },
             { label: "Licence JEaLiFe", href: "/licence" },
         ],
